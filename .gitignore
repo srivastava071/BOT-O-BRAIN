@@ -1,0 +1,49 @@
+# =========================================================================
+# BOT-O-BRAIN Git Ignore File
+# =========================================================================
+
+# Environment variables & sensitive credentials
+.env
+.env.*
+!.env.example
+
+# Python bytecode & cache files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv/
+
+# Local databases & user chat data
+data/*.db
+*.sqlite
+*.sqlite3
+*.db
+
+# Local Chroma Vector DB collections
+vector_db/
+vector_db_rag/
+
+# IDE & Editor settings
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Operating System files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Agent / Scratch temporary directories
+scratch/
+.gemini/
+.agents/

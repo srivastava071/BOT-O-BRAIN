@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BOT-O-BRAIN — AI Memory Companion</title>
+    <meta name="description" content="A minimal, stateful AI memory assistant featuring dual-memory vector recall, document RAG knowledge base, and secure multi-user authentication.">
+    <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/style.css?v=22.0.0">
+</head>
+
+<body>
+
+    <!-- TOP NAVBAR -->
+    <header class="navbar" id="navbar">
+        <div class="nav-left">
+            <button class="nav-icon-btn" id="toggleSidebarBtn" title="Toggle Sidebar">
+                <i class="fa-solid fa-bars-staggered"></i>
+            </button>
+            <div class="logo-group" onclick="showWelcomeHero()" style="cursor: pointer;">
+                <div class="logo-icon">
+                    <i class="fa-solid fa-brain"></i>
+                </div>
+                <div class="logo-text">
+                    <h1>BOT-O-BRAIN <span class="tag-badge">v4.0</span></h1>
+                </div>
+            </div>
+        </div>
+
+        <div class="nav-controls">
+            <button class="nav-btn btn-services" id="toggleServicesBtn" onclick="openServicesModal()" title="AI Services Hub">
+                <i class="fa-solid fa-bolt-lightning" style="color: #f59e0b;"></i>
+                <span class="nav-btn-label">⚡ AI Services</span>
+            </button>
+
+            <button class="nav-btn btn-vault" id="toggleVaultBtn" title="Memory Vault">
+                <i class="fa-solid fa-database"></i>
+                <span class="nav-btn-label">Memory Vault</span>
+                <span class="nav-badge badge-emerald" id="vaultBadge">0</span>
+            </button>
+            <button class="nav-btn btn-rag" id="toggleRagBtn" title="Knowledge Base">
+                <i class="fa-solid fa-book-bookmark"></i>
+                <span class="nav-btn-label">Knowledge Base</span>
+                <span class="nav-badge badge-amber" id="ragBadge">0</span>
+            </button>
+
+
+            <div class="nav-separator"></div>
+
+            <!-- Chat Mode Selector Chip -->
+            <div class="mode-toggle-chip" id="modeToggleChip" onclick="toggleChatMode()" title="Click to cycle Chat Mode (Full Hybrid vs Pure Memory vs RAG DB)">
+                <i class="fa-solid fa-brain" id="modeIcon" style="color: #a855f7;"></i>
+                <span id="modeLabel">Mode: Full Hybrid</span>
+            </div>
+
+
+            <div class="model-chip" id="modelChip">
+                <span class="pulse-dot"></span>
+                <i class="fa-solid fa-microchip"></i>
+                <span id="modelName">Groq Llama-3.3</span>
+            </div>
+
+
+            <!-- User Auth Controls -->
+            <div class="user-chip" id="userPill">
+                <i class="fa-solid fa-user"></i>
+                <span id="usernameDisplay">Guest</span>
+            </div>
+            <button class="nav-btn nav-btn-accent" id="authBtn" title="Sign In">
+                <i class="fa-solid fa-right-to-bracket"></i>
+                <span class="nav-btn-label">Sign In</span>
+            </button>
+            <button class="nav-btn nav-btn-danger hidden" id="logoutBtn" title="Sign Out">
+                <i class="fa-solid fa-right-from-bracket"></i>
+                <span class="nav-btn-label">Sign Out</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- WELCOME LANDING HUB HERO (DEFAULT HOME PAGE) -->
+    <div class="welcome-hero-container" id="welcomeHero">
+        <div class="welcome-hero-card">
+            <div class="welcome-badge">
+                <i class="fa-solid fa-sparkles"></i> Agentic AI System v4.0
+            </div>
+            <h1>Welcome to BOT-O-BRAIN</h1>
+            <p>Select how you would like to interact with your AI Companion</p>
+
+            <div class="hero-options-grid">
+                <!-- Option 1: Chat with Bot -->
+                <div class="hero-option-card hero-card-chat" onclick="openChatSection()">
+                    <div class="hero-card-icon">
+                        <i class="fa-solid fa-comments"></i>
+                    </div>
+                    <h3>💬 Chat with Bot</h3>
+                    <p>Start a conversation with your AI assistant equipped with dual vector memory &amp; tool execution.</p>
+                    <button type="button" class="btn-hero-action btn-hero-chat" onclick="event.stopPropagation(); openChatSection();">Open Chatbot Assistant ➔</button>
+                </div>
+
+                <!-- Option 2: SkyBot Flight Concierge -->
+                <div class="hero-option-card hero-card-sky" style="border-color: rgba(56, 189, 248, 0.4);" onclick="openFlightBot()">
+                    <div class="hero-card-icon" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8;">
+                        <i class="fa-solid fa-plane-up"></i>
+                    </div>
+                    <h3 style="color: #38bdf8;">✈️ SkyBot Flight Concierge</h3>
+                    <p>Search live flights, compare airline fares, check flight status, and reserve tickets.</p>
+                    <button type="button" class="btn-hero-action" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8;" onclick="event.stopPropagation(); openFlightBot();">Open SkyBot ➔</button>
+                </div>
+
+                <!-- Option 3: GrandStay Hotel Concierge -->
+                <div class="hero-option-card hero-card-hotel" style="border-color: rgba(245, 158, 11, 0.4);" onclick="openHotelBot()">
+                    <div class="hero-card-icon" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b;">
+                        <i class="fa-solid fa-hotel"></i>
+                    </div>
+                    <h3 style="color: #fbbf24;">🏨 GrandStay Hotel Concierge</h3>
+                    <p>Search live hotels, find cheapest budget stays, luxury beach resorts, and book rooms with PNR.</p>
+                    <button type="button" class="btn-hero-action" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b;" onclick="event.stopPropagation(); openHotelBot();">Open GrandStay ➔</button>
+                </div>
+
+                <!-- Option 4: AI Services Hub -->
+                <div class="hero-option-card hero-card-services" onclick="openServicesModal()">
+                    <div class="hero-card-icon">
+                        <i class="fa-solid fa-bolt-lightning"></i>
+                    </div>
+                    <h3>⚡ AI Services Hub</h3>
+                    <p>Bookings, Messaging, Memory Vault, Knowledge Base &amp; more AI-powered automations.</p>
+                    <button type="button" class="btn-hero-action btn-hero-services" onclick="event.stopPropagation(); openServicesModal();">Explore AI Services ➔</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN APP LAYOUT (Initially hidden until a view is opened) -->
+    <div class="app-layout hidden" id="appLayout">
+
+
+
+
+        <!-- LEFT SIDEBAR -->
+        <aside class="sidebar" id="chatSidebar">
+            <div class="sidebar-header">
+                <button class="btn-new-chat" id="newChatSidebarBtn">
+                    <i class="fa-solid fa-plus"></i> New Chat
+                </button>
+            </div>
+
+            <div class="sidebar-search">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="sessionSearchInput" placeholder="Search conversations...">
+            </div>
+
+            <div class="session-history-list" id="sessionHistoryList">
+                <div class="history-group" id="groupToday">
+                    <div class="group-label">Today</div>
+                    <div class="group-items" id="itemsToday"></div>
+                </div>
+                <div class="history-group" id="groupYesterday">
+                    <div class="group-label">Yesterday</div>
+                    <div class="group-items" id="itemsYesterday"></div>
+                </div>
+                <div class="history-group" id="groupPrevious7">
+                    <div class="group-label">Previous 7 Days</div>
+                    <div class="group-items" id="itemsPrevious7"></div>
+                </div>
+                <div class="history-group" id="groupOlder">
+                    <div class="group-label">Older</div>
+                    <div class="group-items" id="itemsOlder"></div>
+                </div>
+
+                <div class="empty-history hidden" id="emptyHistory">
+                    <i class="fa-regular fa-comments"></i>
+                    <p>No chat history</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- MAIN DASHBOARD -->
+        <main class="dashboard-grid chat-hero-mode" id="dashboardGrid">
+
+            <!-- MAIN CHAT CARD -->
+            <section class="card chat-card" style="position: relative; overflow: hidden;">
+                <div class="card-header">
+
+                    <div class="header-left">
+                        <div class="mascot-avatar" id="mascotAvatar">
+                            <span id="mascotFace"><i class="fa-solid fa-robot"></i></span>
+                        </div>
+                        <div class="mascot-info">
+                            <h2 id="currentChatTitle">New Chat <span class="status-dot"></span></h2>
+                            <p id="mascotStatus">Ready to assist</p>
+                        </div>
+                    </div>
+                    <div class="header-actions">
+                        <button class="header-pill-btn pill-emerald" id="quickVaultBtn">
+                            <i class="fa-solid fa-database"></i> <span id="quickVaultCount">0</span> memories
+                        </button>
+                        <button class="header-pill-btn pill-purple" id="quickFlowBtn">
+                            <i class="fa-solid fa-route"></i> Pipeline
+                        </button>
+                        <div class="header-thread-id">
+                            <span id="threadIdDisplay">session-new</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MESSAGES CONTAINER -->
+                <div class="chat-messages" id="chatMessages">
+
+                    <div class="messages-inner" id="messagesInner">
+                        <div class="msg bot-msg animate-in">
+                            <div class="msg-avatar"><i class="fa-solid fa-robot"></i></div>
+                            <div class="msg-bubble">
+                                <span class="speaker-name">BOT-O-BRAIN</span>
+                                <p>Welcome! I'm your AI companion with <strong>persistent dual-memory</strong>. Share facts, upload documents, or ask questions — I'll remember context across sessions.</p>
+                                <small class="hint-text"><i class="fa-solid fa-shield-halved"></i> Sign in to unlock private multi-tenant memory vault isolation.</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- QUICK PROMPTS -->
+                <div class="quick-prompts">
+                    <div class="quick-prompts-inner">
+                        <span class="prompt-chip chip-emerald" data-prompt="Hi! My name is Priyanshu, I am 22 years old."><i class="fa-solid fa-user"></i> Tell me your name</span>
+                        <span class="prompt-chip chip-purple" data-prompt="My goal is to become a software architect!"><i class="fa-solid fa-bullseye"></i> Share a career goal</span>
+                        <span class="prompt-chip chip-amber" data-prompt="What are all the facts you remember about me?"><i class="fa-solid fa-brain"></i> What do you remember?</span>
+                    </div>
+                </div>
+
+                <!-- CHAT INPUT FORM -->
+                <form class="chat-input-form" id="chatForm">
+                    <input type="file" id="fileInput" accept="image/*,.pdf,.txt,.md,.csv,.json,.py" class="hidden">
+                    <div class="attachment-preview-bar hidden" id="attachmentPreviewBar"></div>
+                    <div class="chat-input-inner">
+                        <div class="input-box-wrapper">
+                            <button type="button" class="btn-attach" id="attachBtn" title="Attach image or document">
+                                <i class="fa-solid fa-paperclip"></i>
+                            </button>
+                            <textarea id="userInput" placeholder="Ask anything or share facts to remember..." rows="1" autocomplete="off"></textarea>
+                            <button type="submit" class="btn-send" id="sendBtn" title="Send message">
+                                <i class="fa-solid fa-arrow-up"></i>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </section>
+
+            <!-- PANEL 1: MEMORY VAULT -->
+            <section class="card vault-card panel-drawer hidden" id="vaultPanel">
+                <div class="card-header border-bottom">
+                    <div class="title-with-icon">
+                        <span class="header-icon icon-emerald"><i class="fa-solid fa-database"></i></span>
+                        <div>
+                            <h2>Memory Vault</h2>
+                            <p>Vector stored user facts (Chroma DB)</p>
+                        </div>
+                    </div>
+                    <div class="panel-header-right">
+                        <div class="badge-count count-emerald" id="memoryCountBadge">0 Facts</div>
+                        <button class="close-panel-btn" id="closeVaultBtn" title="Close">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="add-memory-box">
+                    <input type="text" id="customMemoryInput" placeholder="Add fact manually (e.g. 'Likes Python & FastAPI')...">
+                    <button class="btn-action btn-action-emerald" id="addMemoryBtn">
+                        <i class="fa-solid fa-plus"></i> Add Fact
+                    </button>
+                </div>
+
+                <div class="search-bar">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="memorySearchInput" placeholder="Search memories...">
+                </div>
+
+                <div class="memory-grid" id="memoryGrid">
+                    <div class="empty-state">
+                        <div class="empty-icon"><i class="fa-solid fa-folder-open"></i></div>
+                        <p>No saved memories</p>
+                        <small>Chat with the bot to automatically store long-term facts.</small>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PANEL 2: PIPELINE FLOW -->
+            <section class="card flow-card panel-drawer hidden" id="flowPanel">
+                <div class="card-header border-bottom">
+                    <div class="title-with-icon">
+                        <span class="header-icon icon-purple"><i class="fa-solid fa-route"></i></span>
+                        <div>
+                            <h2>LangGraph Pipeline</h2>
+                            <p>Execution turn-by-turn workflow</p>
+                        </div>
+                    </div>
+                    <button class="close-panel-btn" id="closeFlowBtn" title="Close">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+
+                <div class="flow-pipeline" id="flowPipeline">
+                    <div class="flow-step" id="step1">
+                        <div class="step-badge">01</div>
+                        <div class="step-content">
+                            <div class="step-icon"><i class="fa-solid fa-terminal"></i></div>
+                            <div class="step-text">
+                                <h3>User Input</h3>
+                                <p>Captures prompt and attachments</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flow-connector"><div class="connector-line"></div></div>
+
+                    <div class="flow-step" id="step2">
+                        <div class="step-badge">02</div>
+                        <div class="step-content">
+                            <div class="step-icon"><i class="fa-solid fa-magnifying-glass"></i></div>
+                            <div class="step-text">
+                                <h3>Chroma Vector Search</h3>
+                                <p>Similarity retrieval (top k=4)</p>
+                            </div>
+                        </div>
+                        <div class="step-pill hidden" id="retrievedPill">
+                            <i class="fa-solid fa-brain"></i> <span id="retrievedText">0 memories recalled</span>
+                        </div>
+                    </div>
+                    <div class="flow-connector"><div class="connector-line"></div></div>
+
+                    <div class="flow-step" id="step3">
+                        <div class="step-badge">03</div>
+                        <div class="step-content">
+                            <div class="step-icon"><i class="fa-solid fa-microchip"></i></div>
+                            <div class="step-text">
+                                <h3>LLM Synthesis</h3>
+                                <p>Context-enhanced response output</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flow-connector"><div class="connector-line"></div></div>
+
+                    <div class="flow-step" id="step4">
+                        <div class="step-badge">04</div>
+                        <div class="step-content">
+                            <div class="step-icon"><i class="fa-solid fa-floppy-disk"></i></div>
+                            <div class="step-text">
+                                <h3>Extract & Save Facts</h3>
+                                <p>Persists extracted user facts</p>
+                            </div>
+                        </div>
+                        <div class="step-pill hidden" id="extractedPill">
+                            <i class="fa-solid fa-sparkles"></i> <span id="extractedText">0 facts saved</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PANEL 3: RAG KNOWLEDGE BASE -->
+            <section class="card rag-card panel-drawer hidden" id="ragPanel">
+                <div class="card-header border-bottom">
+                    <div class="title-with-icon">
+                        <span class="header-icon icon-amber"><i class="fa-solid fa-book-bookmark"></i></span>
+                        <div>
+                            <h2>Knowledge Base RAG</h2>
+                            <p>Ingest PDFs, text files & datasets</p>
+                        </div>
+                    </div>
+                    <div class="panel-header-right">
+                        <div class="badge-count count-amber" id="ragChunkBadge">0 Files</div>
+                        <button class="close-panel-btn" id="closeRagBtn" title="Close">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="rag-drop-box" id="ragDropBox">
+                    <input type="file" id="ragFileInput" accept=".pdf,.txt,.csv,.md,.json,.py,.docx" multiple class="hidden">
+                    <i class="fa-solid fa-cloud-arrow-up light-upload-icon"></i>
+                    <p><strong>Upload Knowledge Files</strong></p>
+                    <small>Supports PDFs, TXT, CSV, Markdown, Code & Datasets</small>
+                </div>
+
+                <div class="search-bar">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="ragSearchInput" placeholder="Search ingested files...">
+                </div>
+
+                <div class="memory-list rag-doc-list" id="ragDocList">
+                    <div class="empty-state"><p>No knowledge base files ingested yet.</p></div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- ============================================================
+         SKYBOT — Standalone Flight AI Assistant.
+         This is a dedicated service view under AI Services, entirely
+         separate from the general chatbot above: its own sidebar, its
+         own message list, its own session — never the same DOM/state
+         as "Chat with Bot".
+         ============================================================ -->
+    <div class="app-layout hidden" id="skyBotLayout">
+
+        <!-- SKYBOT SIDEBAR -->
+        <aside class="sidebar sky-sidebar-standalone" id="skySidebar">
+            <div class="sidebar-header">
+                <button class="btn-new-chat" id="skyNewSearchBtn">
+                    <i class="fa-solid fa-plus"></i> New Search
+                </button>
+            </div>
+
+            <div class="sky-sidebar-flight" id="skySidebarContent">
+                <div class="sky-sidebar-heading"><i class="fa-solid fa-clock-rotate-left"></i> Recent Searches</div>
+                <div class="sky-recent-list" id="skyRecentSearches">
+                    <div class="sky-empty-mini">No recent searches yet</div>
+                </div>
+
+                <div class="sky-sidebar-heading"><i class="fa-solid fa-star"></i> Popular Destinations</div>
+                <div class="sky-dest-grid" id="skyPopularDest">
+                    <div class="sky-dest-chip" data-orig="Delhi" data-dest="Goa"><i class="fa-solid fa-umbrella-beach"></i> Goa</div>
+                    <div class="sky-dest-chip" data-orig="Delhi" data-dest="Bengaluru"><i class="fa-solid fa-city"></i> Bengaluru</div>
+                    <div class="sky-dest-chip" data-orig="Mumbai" data-dest="Jaipur"><i class="fa-solid fa-chess-rook"></i> Jaipur</div>
+                    <div class="sky-dest-chip" data-orig="Delhi" data-dest="Kolkata"><i class="fa-solid fa-landmark"></i> Kolkata</div>
+                </div>
+
+                <div class="sky-sidebar-heading"><i class="fa-solid fa-thumbtack"></i> Pinned Flights</div>
+                <div class="sky-pinned-list" id="skyPinnedFlights">
+                    <div class="sky-empty-mini">Pin a flight from search results</div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- SKYBOT MAIN PANEL -->
+        <main class="dashboard-grid chat-hero-mode">
+            <section class="card chat-card sky-standalone-card" style="position: relative; overflow: hidden;">
+
+                <div class="card-header">
+                    <div class="header-left">
+                        <div class="mascot-avatar sky-mascot-avatar">
+                            <i class="fa-solid fa-plane-up"></i>
+                        </div>
+                        <div class="mascot-info">
+                            <h2>SkyBot <span class="status-dot"></span></h2>
+                            <p>Live Flight Radar &amp; Google Flights Search Active</p>
+                        </div>
+                    </div>
+                    <div class="header-actions">
+                        <button class="header-pill-btn" onclick="window.closeSkyBot();">
+                            <i class="fa-solid fa-arrow-left"></i> Main Hub
+                        </button>
+                    </div>
+                </div>
+
+                <!-- SKYBOT COCKPIT — search panel, quick actions -->
+                <div class="sky-cockpit" id="skyCockpitPanel">
+                    <div class="sky-bg-fx">
+                        <div class="sky-cloud c1"><i class="fa-solid fa-cloud"></i></div>
+                        <div class="sky-cloud c2"><i class="fa-solid fa-cloud"></i></div>
+                    </div>
+
+                    <div class="sky-topbar">
+                        <button type="button" class="sky-hub-btn" id="skyCollapseToggleBtn" title="Collapse / expand cockpit" onclick="window.toggleSkyCockpit()">
+                            <i class="fa-solid fa-chevron-up" id="skyCollapseIcon"></i>
+                        </button>
+                    </div>
+
+                    <div class="sky-title-block">
+                        <h1><i class="fa-solid fa-plane-up"></i> SKYBOT</h1>
+                        <p class="sky-role">AI Flight Concierge</p>
+                        <p class="sky-tagline">"Powered by Live Google Flights"</p>
+                    </div>
+
+                    <div class="sky-search-panel">
+                        <div class="sky-search-row">
+                            <div class="sky-field">
+                                <label>FROM</label>
+                                <div class="sky-input-group">
+                                    <i class="fa-solid fa-plane-departure"></i>
+                                    <input type="text" id="fbOrigin" list="skyAirportList" placeholder="Delhi" value="Delhi">
+                                </div>
+                            </div>
+
+                            <button type="button" class="sky-swap-btn" id="skySwapBtn" title="Swap origin & destination">
+                                <i class="fa-solid fa-right-left"></i>
+                            </button>
+
+                            <div class="sky-field">
+                                <label>TO</label>
+                                <div class="sky-input-group">
+                                    <i class="fa-solid fa-plane-arrival"></i>
+                                    <input type="text" id="fbDest" list="skyAirportList" placeholder="Mumbai" value="Mumbai">
+                                </div>
+                            </div>
+
+                            <div class="sky-field sky-field-date">
+                                <label>DATE</label>
+                                <div class="sky-input-group">
+                                    <i class="fa-solid fa-calendar-days"></i>
+                                    <input type="date" id="fbDate" value="2026-07-26">
+                                </div>
+                            </div>
+
+                            <div class="sky-field sky-field-tiny">
+                                <label>PASSENGERS</label>
+                                <div class="sky-input-group">
+                                    <i class="fa-solid fa-user-group"></i>
+                                    <input type="number" id="fbPax" min="1" max="9" value="1">
+                                </div>
+                            </div>
+
+                            <div class="sky-field sky-field-narrow">
+                                <label>CLASS</label>
+                                <div class="sky-input-group">
+                                    <i class="fa-solid fa-chair"></i>
+                                    <select id="fbClass">
+                                        <option value="Economy">Economy</option>
+                                        <option value="Business">Business</option>
+                                        <option value="First">First</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <button type="button" class="btn-search-flights-premium" id="skySearchBtn" onclick="runRouteSearchWidget()">
+                                <i class="fa-solid fa-paper-plane"></i> Search Flights
+                            </button>
+                        </div>
+
+                        <datalist id="skyAirportList">
+                            <option value="Delhi"><option value="Mumbai"><option value="Bengaluru">
+                            <option value="Goa"><option value="Hyderabad"><option value="Kolkata">
+                            <option value="Chennai"><option value="Pune"><option value="Jaipur"><option value="Ahmedabad">
+                        </datalist>
+                    </div>
+
+                    <div class="sky-quick-actions-row" id="skyQuickActionsRow">
+                        <div class="sky-action-card" onclick="window.runRouteSearchWidget()"><div class="sky-action-card-icon"><i class="fa-solid fa-magnifying-glass"></i></div><span>Search Flights</span></div>
+                        <div class="sky-action-card" data-prompt="Help me book a flight ticket"><div class="sky-action-card-icon"><i class="fa-solid fa-ticket"></i></div><span>Book Flight</span></div>
+                        <div class="sky-action-card" data-prompt="Check my flight status"><div class="sky-action-card-icon"><i class="fa-solid fa-plane-circle-check"></i></div><span>Flight Status</span></div>
+                        <div class="sky-action-card" data-prompt="Check reservation status for my flight PNR"><div class="sky-action-card-icon"><i class="fa-solid fa-barcode"></i></div><span>PNR Status</span></div>
+                    </div>
+                </div>
+
+                <!-- SKYBOT MESSAGES -->
+                <div class="chat-messages" id="skyChatMessages">
+                    <div class="messages-inner" id="skyMessagesInner"></div>
+                </div>
+
+                <!-- SKYBOT INPUT FORM -->
+                <form class="chat-input-form" id="skyChatForm">
+                    <div class="chat-input-inner">
+                        <div class="input-box-wrapper">
+                            <textarea id="skyUserInput" placeholder="Ask SkyBot about flights, fares, or bookings..." rows="1" autocomplete="off"></textarea>
+                            <button type="submit" class="btn-send" id="skySendBtn" title="Send message">
+                                <i class="fa-solid fa-arrow-up"></i>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </section>
+        </main>
+    </div>
+
+    <!-- ============================================================
+         GRANDSTAY — Standalone Luxury Hotel AI Concierge
+         ============================================================ -->
+    <div class="app-layout hidden" id="hotelBotLayout">
+
+        <!-- GRANDSTAY SIDEBAR -->
+        <aside class="sidebar hotel-sidebar-standalone" id="hotelSidebar">
+            <div class="sidebar-header">
+                <button class="btn-new-chat hotel-new-btn" id="hotelNewSearchBtn" onclick="window.openHotelBot();">
+                    <i class="fa-solid fa-plus"></i> New Hotel Search
+                </button>
+            </div>
+
+            <div class="sky-sidebar-flight" id="hotelSidebarContent">
+                <div class="sky-sidebar-heading" style="color: #f59e0b;"><i class="fa-solid fa-hotel"></i> Featured Cities</div>
+                <div class="sky-dest-grid" id="hotelPopularDest">
+                    <div class="sky-dest-chip hotel-dest-chip" onclick="window.setHotelCity('Goa')"><i class="fa-solid fa-umbrella-beach"></i> Goa</div>
+                    <div class="sky-dest-chip hotel-dest-chip" onclick="window.setHotelCity('Delhi')"><i class="fa-solid fa-landmark"></i> Delhi</div>
+                    <div class="sky-dest-chip hotel-dest-chip" onclick="window.setHotelCity('Mumbai')"><i class="fa-solid fa-city"></i> Mumbai</div>
+                    <div class="sky-dest-chip hotel-dest-chip" onclick="window.setHotelCity('Jaipur')"><i class="fa-solid fa-chess-rook"></i> Jaipur</div>
+                    <div class="sky-dest-chip hotel-dest-chip" onclick="window.setHotelCity('Udaipur')"><i class="fa-solid fa-water"></i> Udaipur</div>
+                </div>
+
+                <div class="sky-sidebar-heading" style="color: #f59e0b;"><i class="fa-solid fa-tags"></i> Quick Filters</div>
+                <div class="sky-pinned-list">
+                    <div class="sky-dest-chip hotel-dest-chip" style="width: 100%; margin-bottom: 6px;" onclick="window.sendHotelPrompt('Show me the cheapest budget hotels in Delhi')">
+                        💰 Cheapest Hotels
+                    </div>
+                    <div class="sky-dest-chip hotel-dest-chip" style="width: 100%; margin-bottom: 6px;" onclick="window.sendHotelPrompt('Show me luxury 5-star resorts in Goa with beach access')">
+                        👑 5-Star Beach Resorts
+                    </div>
+                    <div class="sky-dest-chip hotel-dest-chip" style="width: 100%;" onclick="window.sendHotelPrompt('Check my hotel PNR booking status')">
+                        📌 Check Hotel PNR
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- GRANDSTAY MAIN PANEL -->
+        <main class="dashboard-grid chat-hero-mode">
+            <section class="card chat-card hotel-standalone-card" style="position: relative; overflow: hidden;">
+
+                <div class="card-header hotel-header-bg">
+                    <div class="header-left">
+                        <div class="mascot-avatar hotel-mascot-avatar">
+                            <i class="fa-solid fa-bell-concierge"></i>
+                        </div>
+                        <div class="mascot-info">
+                            <h2 style="color: #fbbf24;">GrandStay <span class="status-dot"></span></h2>
+                            <p>Luxury Hotel Concierge &amp; Room Booking Engine</p>
+                        </div>
+                    </div>
+                    <div class="header-actions">
+                        <button class="header-pill-btn hotel-pill-btn" onclick="window.closeHotelBot();">
+                            <i class="fa-solid fa-arrow-left"></i> Main Hub
+                        </button>
+                    </div>
+                </div>
+
+                <!-- GRANDSTAY COCKPIT PANEL -->
+                <div class="sky-cockpit hotel-cockpit-theme" id="hotelCockpitPanel">
+                    <button class="sky-cockpit-toggle" id="hotelCollapseToggleBtn" onclick="window.toggleHotelCockpit()" title="Toggle Search Cockpit">
+                        <i class="fa-solid fa-chevron-up" id="hotelCollapseIcon"></i>
+                    </button>
+
+                    <div class="sky-title-block">
+                        <h1 style="color: #f59e0b;"><i class="fa-solid fa-hotel"></i> GRANDSTAY</h1>
+                        <p class="sky-role" style="color: #fbbf24;">AI Luxury Hotel Concierge</p>
+                        <p class="sky-tagline">"Live Internet Hotel Search &amp; Room Reservations"</p>
+                    </div>
+
+
+                    <div class="sky-search-panel hotel-search-theme">
+                        <div class="sky-search-row">
+                            <div class="sky-field">
+                                <label>DESTINATION CITY</label>
+                                <div class="sky-input-group">
+                                    <i class="fa-solid fa-location-dot" style="color: #f59e0b;"></i>
+                                    <input type="text" id="hbCity" list="hotelCityList" placeholder="Delhi" value="Delhi">
+                                </div>
+                            </div>
+
+                            <div class="sky-field sky-field-date">
+                                <label>CHECK-IN</label>
+                                <div class="sky-input-group">
+                                    <i class="fa-solid fa-calendar-check" style="color: #f59e0b;"></i>
+                                    <input type="text" id="hbCheckIn" placeholder="Tomorrow" value="Tomorrow">
+                                </div>
+                            </div>
+
+                            <div class="sky-field sky-field-narrow">
+                                <label>CATEGORY / SORT</label>
+                                <div class="sky-input-group">
+                                    <i class="fa-solid fa-filter" style="color: #f59e0b;"></i>
+                                    <select id="hbSort">
+                                        <option value="cheapest">💰 Cheapest / Budget</option>
+                                        <option value="luxury">👑 Luxury 5-Star</option>
+                                        <option value="default">⭐ Top Rated</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <button type="button" class="btn-search-hotels-gold" id="hotelSearchBtn" onclick="window.runHotelSearchWidget()">
+                                <i class="fa-solid fa-magnifying-glass"></i> Search Hotels
+                            </button>
+                        </div>
+
+                        <datalist id="hotelCityList">
+                            <option value="Delhi"><option value="Goa"><option value="Mumbai">
+                            <option value="Jaipur"><option value="Udaipur"><option value="Bengaluru">
+                            <option value="Shimla"><option value="Manali">
+                        </datalist>
+                    </div>
+
+                    <div class="sky-quick-actions-row" id="hotelQuickActionsRow">
+                        <div class="sky-action-card hotel-action-card" onclick="window.runHotelSearchWidget()"><div class="sky-action-card-icon" style="background: rgba(245, 158, 11, 0.2); color: #f59e0b;"><i class="fa-solid fa-magnifying-glass"></i></div><span>Find Hotels</span></div>
+                        <div class="sky-action-card hotel-action-card" onclick="window.sendHotelPrompt('Show cheapest hotels in Delhi')"><div class="sky-action-card-icon" style="background: rgba(245, 158, 11, 0.2); color: #f59e0b;"><i class="fa-solid fa-coins"></i></div><span>Cheapest Hotels</span></div>
+                        <div class="sky-action-card hotel-action-card" onclick="window.sendHotelPrompt('Book a room for me in Delhi')"><div class="sky-action-card-icon" style="background: rgba(245, 158, 11, 0.2); color: #f59e0b;"><i class="fa-solid fa-bed"></i></div><span>Book Room</span></div>
+                        <div class="sky-action-card hotel-action-card" onclick="window.sendHotelPrompt('Check my hotel reservation status')"><div class="sky-action-card-icon" style="background: rgba(245, 158, 11, 0.2); color: #f59e0b;"><i class="fa-solid fa-receipt"></i></div><span>PNR Status</span></div>
+                    </div>
+                </div>
+
+                <!-- GRANDSTAY MESSAGES -->
+                <div class="chat-messages" id="hotelChatMessages">
+                    <div class="messages-inner" id="hotelMessagesInner"></div>
+                </div>
+
+                <!-- GRANDSTAY INPUT FORM -->
+                <form class="chat-input-form" id="hotelChatForm">
+                    <div class="chat-input-inner">
+                        <div class="input-box-wrapper">
+                            <textarea id="hotelUserInput" placeholder="Ask GrandStay about hotels, room rates, or reservations..." rows="1" autocomplete="off"></textarea>
+                            <button type="submit" class="btn-send hotel-send-btn" id="hotelSendBtn" title="Send message">
+                                <i class="fa-solid fa-arrow-up"></i>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </section>
+        </main>
+    </div>
+
+    <!-- SIGN IN MODAL -->
+    <div class="modal-overlay hidden" id="authModal">
+        <div class="auth-modal-card">
+            <button class="modal-close-btn" id="closeAuthModal">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="auth-header">
+                <div class="auth-logo"><i class="fa-solid fa-brain"></i></div>
+                <h2 id="authModalTitle">Sign In</h2>
+                <p id="authModalSubtitle">Sign in or create an account to access private memories.</p>
+            </div>
+
+            <!-- Tab Switcher -->
+            <div class="auth-tabs" id="authTabs">
+                <button type="button" class="auth-tab active" id="tabLogin">Sign In</button>
+                <button type="button" class="auth-tab" id="tabSignup">Create Account</button>
+            </div>
+
+            <!-- Auth Form -->
+            <form class="auth-form" id="authForm">
+                <div class="auth-input-group signup-only hidden" id="groupFullName">
+                    <label for="authFullName">Full Name</label>
+                    <div class="auth-input-wrapper">
+                        <i class="fa-solid fa-id-card"></i>
+                        <input type="text" id="authFullName" placeholder="Priyanshu Kumar">
+                    </div>
+                </div>
+                <div class="auth-input-group signup-only hidden" id="groupEmail">
+                    <label for="authEmail">Email Address</label>
+                    <div class="auth-input-wrapper">
+                        <i class="fa-solid fa-envelope"></i>
+                        <input type="email" id="authEmail" placeholder="priyanshu@example.com">
+                    </div>
+                </div>
+                <div class="auth-input-group login-only" id="groupLoginIdentifier">
+                    <label for="authLoginIdentifier">Email or Username</label>
+                    <div class="auth-input-wrapper">
+                        <i class="fa-solid fa-at"></i>
+                        <input type="text" id="authLoginIdentifier" placeholder="Email or username">
+                    </div>
+                </div>
+                <div class="auth-input-group signup-only hidden" id="groupUsername">
+                    <label for="authUsername">Username</label>
+                    <div class="auth-input-wrapper">
+                        <i class="fa-solid fa-user"></i>
+                        <input type="text" id="authUsername" placeholder="priyanshu">
+                    </div>
+                </div>
+                <div class="auth-input-group">
+                    <label for="authPassword">Password</label>
+                    <div class="auth-input-wrapper">
+                        <i class="fa-solid fa-lock"></i>
+                        <input type="password" id="authPassword" placeholder="Minimum 6 characters">
+                    </div>
+                </div>
+                <div class="auth-input-group signup-only hidden" id="groupConfirmPassword">
+                    <label for="authConfirmPassword">Confirm Password</label>
+                    <div class="auth-input-wrapper">
+                        <i class="fa-solid fa-key"></i>
+                        <input type="password" id="authConfirmPassword" placeholder="Re-enter password">
+                    </div>
+                </div>
+
+                <div class="auth-error-badge hidden" id="authErrorMsg"></div>
+
+                <button type="submit" class="btn-auth-submit" id="authSubmitBtn">
+                    Sign In
+                </button>
+            </form>
+
+            <!-- OTP View -->
+            <div class="otp-container hidden" id="otpView">
+                <div class="otp-banner" id="otpNoticeBanner">
+                    <i class="fa-solid fa-paper-plane"></i>
+                    <div>
+                        <strong>Verification Code Sent</strong>
+                        <p id="otpNoticeText">Check your email for the 6-digit OTP code.</p>
+                    </div>
+                </div>
+
+                <form class="auth-form" id="otpForm">
+                    <div class="auth-input-group">
+                        <label for="authOtpCode">6-Digit Verification Code</label>
+                        <div class="auth-input-wrapper">
+                            <i class="fa-solid fa-hashtag"></i>
+                            <input type="text" id="authOtpCode" placeholder="000000" required maxlength="6" class="otp-input">
+                        </div>
+                    </div>
+
+                    <div class="auth-error-badge hidden" id="otpErrorMsg"></div>
+
+                    <button type="submit" class="btn-auth-submit" id="otpSubmitBtn">
+                        <i class="fa-solid fa-check-double"></i> Verify Account
+                    </button>
+                </form>
+
+                <div class="otp-footer">
+                    <span>Didn't receive code?</span>
+                    <button class="btn-link" id="resendOtpBtn">Resend OTP</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI SERVICES HUB POPUP MODAL -->
+    <div class="modal-overlay hidden" id="servicesModal">
+        <div class="modal-card services-modal-card">
+            <button class="btn-modal-close" id="closeServicesModalBtn" onclick="window.closeServicesModal()">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            
+            <div class="services-modal-header">
+                <div class="services-icon-badge">
+                    <i class="fa-solid fa-bolt-lightning"></i>
+                </div>
+                <h2>BOT-O-BRAIN AI Services Hub</h2>
+                <p>Select a category to explore automated AI services</p>
+            </div>
+
+            <!-- TOP-LEVEL CATEGORIES GRID -->
+            <div class="service-categories-grid" id="serviceCategoriesGrid">
+                <!-- Category 1: Bookings & Reservations -->
+                <div class="category-card" onclick="openServiceCategory('bookings')">
+                    <div class="category-card-head">
+                        <div class="category-icon-badge" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8;">
+                            <i class="fa-solid fa-ticket-simple"></i>
+                        </div>
+                        <span class="category-badge badge-blue">3 Services</span>
+                    </div>
+                    <div class="category-card-info">
+                        <h3>Bookings &amp; Reservations</h3>
+                        <p>Search &amp; reserve Live Flights, Cinema Tickets, and Hotel Rooms</p>
+                    </div>
+                    <div class="category-card-foot">
+                        <span>Explore Bookings</span>
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </div>
+                </div>
+
+                <!-- Category 2: Messaging & Communications -->
+                <div class="category-card" onclick="openServiceCategory('messaging')">
+                    <div class="category-card-head">
+                        <div class="category-icon-badge" style="background: rgba(34, 197, 94, 0.15); color: #22c55e;">
+                            <i class="fa-solid fa-comments"></i>
+                        </div>
+                        <span class="category-badge badge-green">3 Services</span>
+                    </div>
+                    <div class="category-card-info">
+                        <h3>Messaging &amp; Notifications</h3>
+                        <p>Send automated WhatsApp, Telegram, and Email / Gmail messages</p>
+                    </div>
+                    <div class="category-card-foot">
+                        <span>Explore Messaging</span>
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </div>
+                </div>
+
+                <!-- Category 3: Other AI Utilities -->
+                <div class="category-card" onclick="openServiceCategory('utilities')">
+                    <div class="category-card-head">
+                        <div class="category-icon-badge" style="background: rgba(168, 85, 247, 0.15); color: #a855f7;">
+                            <i class="fa-solid fa-brain"></i>
+                        </div>
+                        <span class="category-badge badge-purple">2 Utilities</span>
+                    </div>
+                    <div class="category-card-info">
+                        <h3>Other AI Services &amp; Vault</h3>
+                        <p>Manage Long-Term Memory Vault and Document Knowledge Base RAG</p>
+                    </div>
+                    <div class="category-card-foot">
+                        <span>Explore Utilities</span>
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SUB-CATEGORY SELECTOR SUBMENU -->
+            <div class="service-submenu-box hidden" id="serviceSubMenuBox">
+                <div class="service-action-header">
+                    <span id="subMenuTitle">🎫 Bookings &amp; Reservations</span>
+                    <button class="btn-link" onclick="backToCategories()"><i class="fa-solid fa-arrow-left"></i> Back to Categories</button>
+                </div>
+                <div class="services-grid" id="subMenuGrid">
+                    <!-- Dynamic Sub-menu Cards loaded by JavaScript -->
+                </div>
+            </div>
+
+            <!-- SERVICE QUICK ACTION FORM CONTAINER -->
+            <div class="service-action-box hidden" id="serviceActionBox">
+                <div class="service-action-header">
+                    <span id="serviceActionTitle">✈️ Book Flight Ticket</span>
+                    <button class="btn-link" onclick="backToSubMenu()"><i class="fa-solid fa-arrow-left"></i> Back to Options</button>
+                </div>
+
+                <!-- Email Form -->
+                <form id="formEmail" class="service-form hidden" onsubmit="handleEmailSubmit(event)">
+                    <input type="email" id="seTo" placeholder="Recipient Email (e.g. user@gmail.com)" required class="srv-input">
+                    <input type="text" id="seSubj" placeholder="Subject Line" required class="srv-input">
+                    <textarea id="seBody" placeholder="Message content..." required class="srv-input" rows="3"></textarea>
+                    <button type="submit" class="btn-service-run" style="background: #ef4444; color: white;">
+                        <i class="fa-solid fa-paper-plane"></i> Send Email
+                    </button>
+                </form>
+
+                <!-- WhatsApp Form -->
+                <form id="formWhatsApp" class="service-form hidden" onsubmit="handleWhatsAppSubmit(event)">
+                    <input type="text" id="swNum" placeholder="Phone Number with Country Code (e.g. +919876543210)" required class="srv-input">
+                    <textarea id="swMsg" placeholder="WhatsApp message..." required class="srv-input" rows="3"></textarea>
+                    <button type="submit" class="btn-service-run" style="background: #22c55e; color: white;">
+                        <i class="fa-brands fa-whatsapp"></i> Send WhatsApp Message
+                    </button>
+                </form>
+
+                <!-- Telegram Form -->
+                <form id="formTelegram" class="service-form hidden" onsubmit="handleTelegramSubmit(event)">
+                    <input type="text" id="stChat" placeholder="Telegram Chat ID or Username" required class="srv-input">
+                    <textarea id="stMsg" placeholder="Telegram message..." required class="srv-input" rows="3"></textarea>
+                    <button type="submit" class="btn-service-run" style="background: #3b82f6; color: white;">
+                        <i class="fa-brands fa-telegram"></i> Send Telegram Message
+                    </button>
+                </form>
+
+                <!-- Movie Form -->
+                <form id="formMovie" class="service-form hidden" onsubmit="handleMovieSubmit(event)">
+                    <input type="text" id="smTitle" placeholder="Movie Name (e.g. Avatar, Inception)" required class="srv-input">
+                    <div class="form-row">
+                        <input type="text" id="smCity" placeholder="City (e.g. Delhi)" required class="srv-input">
+                        <input type="number" id="smSeats" placeholder="Seats (1-6)" min="1" max="6" value="2" required class="srv-input">
+                    </div>
+                    <button type="submit" class="btn-service-run" style="background: #a855f7; color: white;">
+                        <i class="fa-solid fa-film"></i> Search &amp; Reserve Movie Tickets
+                    </button>
+                </form>
+
+                <!-- Hotel Form (NEW) -->
+                <form id="formHotel" class="service-form hidden" onsubmit="handleHotelSubmit(event)">
+                    <input type="text" id="shCity" placeholder="Destination City (e.g. Goa, Mumbai, Jaipur)" required class="srv-input">
+                    <div class="form-row">
+                        <input type="date" id="shDate" required class="srv-input" title="Check-in Date">
+                        <input type="number" id="shGuests" placeholder="Guests (1-8)" min="1" max="8" value="2" required class="srv-input">
+                    </div>
+                    <select id="shRoom" class="srv-input">
+                        <option value="Deluxe Room">Deluxe Room</option>
+                        <option value="Executive Suite">Executive Suite</option>
+                        <option value="Standard Room">Standard Room</option>
+                    </select>
+                    <button type="submit" class="btn-service-run" style="background: #38bdf8; color: #001018;">
+                        <i class="fa-solid fa-hotel"></i> Search &amp; Reserve Hotel Rooms
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <p>Engineered with <strong>LangGraph</strong>, <strong>Groq LLM</strong> & <strong>Chroma Vector DB</strong> • Multi-User Architecture</p>
+    </footer>
+
+    <!-- APP JS -->
+    <script src="/static/app.js?v=22.0.0"></script>
+</body>
+
+</html>
+
