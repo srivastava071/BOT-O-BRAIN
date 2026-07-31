@@ -25,14 +25,14 @@ def search_flights_tool(origin: str, destination: str, travel_date: str) -> str:
         if not flights:
             return f"No flights found from {origin} to {destination} on {travel_date}."
         
-        lines = [f"✈️ **Available Flights ({origin} -> {destination}) on {travel_date}**:\n"]
+        lines = [f"**Available Flights ({origin} -> {destination}) on {travel_date}**:\n"]
         for f in flights:
             lines.append(
                 f"• **{f['airline']} ({f['flight_number']})**\n"
                 f"  Departure: {f['departure_time']} | Arrival: {f['arrival_time']} ({f['duration']})\n"
                 f"  Price: ₹{f['price_inr']:,} per person | Seats Left: {f['seats_available']}\n"
             )
-        lines.append("💡 *Tell me which flight or departure time you prefer to reserve your ticket!*")
+        lines.append("*Tell me which flight or departure time you prefer to reserve your ticket!*")
         return "\n".join(lines)
     except Exception as err:
         return f"Error searching flights: {str(err)}"
@@ -75,17 +75,17 @@ def book_flight_tool(
         payment_link = booking["payment_url"]
         
         res = (
-            f"🎉 **FLIGHT TICKET RESERVED SUCCESSFULLY!**\n"
+            f"**FLIGHT TICKET RESERVED SUCCESSFULLY**\n"
             f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-            f"📌 **PNR Code**: `{pnr}`\n"
-            f"👤 **Passenger**: {passenger_name}\n"
-            f"✈️ **Flight**: {booking['airline']} ({booking['flight_number']})\n"
-            f"🛫 **Route**: {booking['origin']} ➔ {booking['destination']}\n"
-            f"📅 **Date & Time**: {travel_date} @ {booking['departure_time']}\n"
-            f"💰 **Total Fare**: ₹{price:,} INR\n"
-            f"⏳ **Status**: `PENDING PAYMENT`\n"
+            f"**PNR Code**: `{pnr}`\n"
+            f"**Passenger**: {passenger_name}\n"
+            f"**Flight**: {booking['airline']} ({booking['flight_number']})\n"
+            f"**Route**: {booking['origin']} -> {booking['destination']}\n"
+            f"**Date & Time**: {travel_date} @ {booking['departure_time']}\n"
+            f"**Total Fare**: ₹{price:,} INR\n"
+            f"**Status**: `PENDING PAYMENT`\n"
             f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-            f"💳 **PAYMENT INSTRUCTIONS**:\n"
+            f"**PAYMENT INSTRUCTIONS**:\n"
             f"Please complete payment to issue your e-ticket.\n"
             f"• Quick Link: {payment_link}\n"
             f"• Or simply tell me: *'Pay ₹{price:,} for PNR {pnr} using UPI'* to complete payment now!"
@@ -106,17 +106,17 @@ def check_flight_booking_tool(pnr: str, user_id: str = "usr_guest") -> str:
     try:
         booking = booking_db.get_booking_by_pnr(pnr)
         if not booking:
-            return f"❌ No flight reservation found for PNR code `{pnr}`."
+            return f"No flight reservation found for PNR code `{pnr}`."
         
-        status_emoji = "✅ CONFIRMED & ISSUED" if booking["payment_status"] == "PAID" else "⏳ PENDING PAYMENT"
+        status_text = "CONFIRMED & ISSUED" if booking["payment_status"] == "PAID" else "PENDING PAYMENT"
         return (
-            f"📋 **Booking Details for PNR**: `{booking['pnr']}`\n"
+            f"**Booking Details for PNR**: `{booking['pnr']}`\n"
             f"• Passenger: {booking['passenger_name']}\n"
             f"• Flight: {booking['airline']} ({booking['flight_number']})\n"
             f"• Route: {booking['origin']} -> {booking['destination']}\n"
             f"• Date: {booking['travel_date']} at {booking['departure_time']}\n"
             f"• Amount: ₹{booking['price_inr']:,}\n"
-            f"• Status: {status_emoji}"
+            f"• Status: {status_text}"
         )
     except Exception as err:
         return f"Error checking booking: {str(err)}"
@@ -134,15 +134,15 @@ def pay_flight_booking_tool(pnr: str, payment_method: str = "UPI", user_id: str 
     try:
         updated = flight_service.complete_booking_payment(pnr, payment_method=payment_method)
         return (
-            f"✅ **PAYMENT SUCCESSFUL! E-TICKET CONFIRMED** 🎉\n"
+            f"**PAYMENT SUCCESSFUL! E-TICKET CONFIRMED**\n"
             f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-            f"📌 **PNR Code**: `{updated['pnr']}`\n"
-            f"👤 **Passenger**: {updated['passenger_name']}\n"
-            f"✈️ **Flight**: {updated['airline']} ({updated['flight_number']})\n"
-            f"🛫 **Route**: {updated['origin']} ➔ {updated['destination']}\n"
-            f"📅 **Departure**: {updated['travel_date']} @ {updated['departure_time']}\n"
-            f"💳 **Payment Method**: {payment_method}\n"
-            f"🎫 **Ticket Status**: `CONFIRMED (PAID)`\n"
+            f"**PNR Code**: `{updated['pnr']}`\n"
+            f"**Passenger**: {updated['passenger_name']}\n"
+            f"**Flight**: {updated['airline']} ({updated['flight_number']})\n"
+            f"**Route**: {updated['origin']} -> {updated['destination']}\n"
+            f"**Departure**: {updated['travel_date']} @ {updated['departure_time']}\n"
+            f"**Payment Method**: {payment_method}\n"
+            f"**Ticket Status**: `CONFIRMED (PAID)`\n"
             f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
             f"Your boarding pass will be delivered to your registered email!"
         )

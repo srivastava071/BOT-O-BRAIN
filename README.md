@@ -1,56 +1,56 @@
-# BOT-O-BRAIN — Stateful Dual-Memory AI Companion, Document RAG & Services Ecosystem 🤖🧠✈️
+# BOT-O-BRAIN — Stateful Dual-Memory AI Companion, Document RAG & Services Ecosystem
 
 BOT-O-BRAIN is an enterprise-grade, stateful AI assistant ecosystem powered by **LangGraph**, **Groq / OpenAI**, **Chroma Vector DB**, **SerpApi Google Flights**, and **SQLite**. It features a **Dual-Memory Architecture** (short-term conversational checkpointer + long-term persistent fact extraction memory), a **Document Knowledge Base (RAG)**, an **AI Services Hub (Flights, Hotels, Movies)**, and **SkyBot** — an immersive flight booking concierge with a full-screen flight simulator cockpit UI.
 
 ---
 
-## 📖 Table of Contents
-1. [Overview & Core Capabilities](#-overview--core-capabilities)
-2. [System Flow Architecture & Diagrams](#-system-flow-architecture--diagrams)
+## Table of Contents
+1. [Overview & Core Capabilities](#overview--core-capabilities)
+2. [System Flow Architecture & Diagrams](#system-flow-architecture--diagrams)
    - [1. High-Level Layered System Architecture](#1-high-level-layered-system-architecture)
    - [2. LangGraph Turn Execution Pipeline](#2-langgraph-turn-execution-pipeline)
    - [3. Dual Memory Architecture Flow](#3-dual-memory-architecture-flow)
    - [4. Document RAG Ingestion & Query Pipeline](#4-document-rag-ingestion--query-pipeline)
    - [5. Secure Authentication & Email OTP Flow](#5-secure-authentication--email-otp-flow)
-3. [How Things Work: Component Deep-Dive](#-how-things-work-component-deep-dive)
-4. [Directory & Module Layout](#-directory--module-layout)
-5. [Database Schemas & Vector Stores](#-database-schemas--vector-stores)
-6. [API Endpoints Reference](#-api-endpoints-reference)
-7. [Installation & Setup Guide](#-installation--setup-guide)
+3. [How Things Work: Component Deep-Dive](#how-things-work-component-deep-dive)
+4. [Directory & Module Layout](#directory--module-layout)
+5. [Database Schemas & Vector Stores](#database-schemas--vector-stores)
+6. [API Endpoints Reference](#api-endpoints-reference)
+7. [Installation & Setup Guide](#installation--setup-guide)
 
 ---
 
-## 🌟 Overview & Core Capabilities
+## Overview & Core Capabilities
 
 BOT-O-BRAIN combines real-time conversational capabilities with domain-specific AI tools, vector knowledge retrieval, and persistent user memories:
 
-* 🧠 **Dual-Memory Architecture**:
+* **Dual-Memory Architecture**:
   * **Short-Term Memory**: Multi-turn conversation context preserved across turns per thread/session using LangGraph's `MemorySaver` checkpointer.
   * **Long-Term Fact Store**: Automatic LLM extraction of durable facts (user preferences, goals, background, hobbies) stored as vector embeddings in **Chroma DB** (`./vector_db`) scoped per user.
 
-* ✈️ **SkyBot Flight Concierge & Cockpit**:
+* **SkyBot Flight Concierge & Cockpit**:
   * Real-time flight availability searches via Google Flights (SerpApi & RapidAPI failover).
   * Interactive PNR reservation, status checks, fare comparisons, and simulated UPI e-ticket payments.
   * Immersive full-screen flight simulator video background and telemetry HUD (`ALT: 35,000 FT`, `SPEED: 480 KTS`, `RADAR: ONLINE`).
 
-* 📚 **Document Knowledge Base (RAG)**:
+* **Document Knowledge Base (RAG)**:
   * Ingestion of PDFs, CSVs, TXT, Markdown, JSON, and Python code files.
   * `RecursiveCharacterTextSplitter` (800-char chunks, 150 overlap) indexed in a dedicated vector collection (`./vector_db_rag`).
 
-* 🏢 **AI Services Hub**:
+* **AI Services Hub**:
   * **Hotel Booking Engine**: City-wide hotel search, room reservations, PNR tracking (`PNR-HTL...`).
   * **Movie Ticket Suite**: Movie search, cinema showtimes, ticket booking (`PNR-MOV...`).
   * **Python REPL & Calculator**: Safe Python code execution environment for math algorithms and financial metrics.
   * **Live Web Search**: Real-time web searching powered by DuckDuckGo.
 
-* 🔐 **Multi-Tenant Auth & Email OTP**:
+* **Multi-Tenant Auth & Email OTP**:
   * User registration with salted SHA-256 password hashing.
   * 6-digit Email OTP verification dispatched via SMTP.
   * Isolated memory spaces, session histories, and document libraries per user.
 
 ---
 
-## 📐 System Flow Architecture & Diagrams
+## System Flow Architecture & Diagrams
 
 ### 1. High-Level Layered System Architecture
 
@@ -209,7 +209,7 @@ sequenceDiagram
 
 ---
 
-## ⚙️ How Things Work: Component Deep-Dive
+## How Things Work: Component Deep-Dive
 
 ### 1. Multi-Model LLM Orchestration (`app.py`)
 BOT-O-BRAIN implements a multi-provider fallback hierarchy to ensure reliability:
@@ -232,7 +232,7 @@ SkyBot uses a multi-tier live search architecture:
 
 ---
 
-## 📁 Directory & Module Layout
+## Directory & Module Layout
 
 ```text
 ProjectMemoryChatbot/
@@ -266,7 +266,7 @@ ProjectMemoryChatbot/
 
 ---
 
-## 🗄️ Database Schemas & Vector Stores
+## Database Schemas & Vector Stores
 
 ### SQLite Tables (`data/chatbot_history.db`)
 
@@ -309,7 +309,7 @@ ProjectMemoryChatbot/
 
 ---
 
-## 🔌 API Endpoints Reference
+## API Endpoints Reference
 
 ### Authentication Endpoints (`/api/auth`)
 * `POST /api/auth/signup`: Register a new user account and dispatch 6-digit OTP to email.
@@ -335,7 +335,7 @@ ProjectMemoryChatbot/
 
 ---
 
-## 🛠️ Installation & Setup Guide
+## Installation & Setup Guide
 
 ### 1. Prerequisites
 * **Python 3.10+**
@@ -343,7 +343,7 @@ ProjectMemoryChatbot/
 ### 2. Installation
 ```bash
 # Clone the repository
-git clone <repository-url>
+git clone https://github.com/srivastava071/BOT-O-BRAIN.git
 cd ProjectMemoryChatbot
 
 # Install required dependencies
@@ -382,4 +382,4 @@ uvicorn server:app --reload --port 8000
 ```
 
 Open your browser and navigate to:
-👉 **`http://localhost:8000`**
+http://localhost:8000

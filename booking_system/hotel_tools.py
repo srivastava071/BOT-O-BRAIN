@@ -27,17 +27,18 @@ def search_hotels_tool(city: str, sort_by: str = "default", check_in: str = "Tom
         
         is_cheap = any(k in sort_by.lower() for k in ["cheap", "budget", "price"])
         header_title = f"Cheapest & Best Value Hotels in {city.capitalize()}" if is_cheap else f"Top Hotel Recommendations in {city.capitalize()}"
-        lines = [f"🏨 **{header_title} ({nights} night(s), Check-in: {check_in})**:\n"]
+        header_title = f"Cheapest & Best Value Hotels in {city.capitalize()}" if is_cheap else f"Top Hotel Recommendations in {city.capitalize()}"
+        lines = [f"**{header_title} ({nights} night(s), Check-in: {check_in})**:\n"]
         for h in hotels:
             amenities_str = ", ".join(h['amenities'])
             lines.append(
                 f"• **{h['name']}** ({h['rating']})\n"
-                f"  📍 Location: {h['location']}\n"
-                f"  🛏️ Room: {h['room_type']}\n"
-                f"  💰 Fare: ₹{h['price_per_night']:,} / night (Total: ₹{h['total_price_inr']:,} INR)\n"
-                f"  ✨ Amenities: {amenities_str}\n"
+                f"  Location: {h['location']}\n"
+                f"  Room: {h['room_type']}\n"
+                f"  Fare: ₹{h['price_per_night']:,} / night (Total: ₹{h['total_price_inr']:,} INR)\n"
+                f"  Amenities: {amenities_str}\n"
             )
-        lines.append("💡 *Tell me if you want me to book any of these hotels for you right now!*")
+        lines.append("*Tell me if you want me to book any of these hotels for you right now!*")
         return "\n".join(lines)
     except Exception as err:
         return f"Error searching hotels: {str(err)}"
@@ -83,19 +84,19 @@ def book_hotel_tool(
         payment_link = booking["payment_url"]
         
         res = (
-            f"🎉 **HOTEL ROOM RESERVED SUCCESSFULLY!**\n"
+            f"**HOTEL ROOM RESERVED SUCCESSFULLY**\n"
             f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-            f"📌 **Hotel PNR Code**: `{pnr}`\n"
-            f"👤 **Primary Guest**: {guest_name} ({guests_count} Guests)\n"
-            f"🏨 **Hotel**: {booking['hotel_name']}\n"
-            f"🛏️ **Room Type**: {booking['room_type']}\n"
-            f"📍 **City**: {booking['city']}\n"
-            f"📅 **Stay Period**: {check_in} ➔ {check_out} ({booking['nights_count']} Night(s))\n"
-            f"✨ **Included**: {booking['amenities']}\n"
-            f"💰 **Total Fare**: ₹{total_price:,} INR\n"
-            f"⏳ **Status**: `PENDING PAYMENT`\n"
+            f"**Hotel PNR Code**: `{pnr}`\n"
+            f"**Primary Guest**: {guest_name} ({guests_count} Guests)\n"
+            f"**Hotel**: {booking['hotel_name']}\n"
+            f"**Room Type**: {booking['room_type']}\n"
+            f"**City**: {booking['city']}\n"
+            f"**Stay Period**: {check_in} -> {check_out} ({booking['nights_count']} Night(s))\n"
+            f"**Included**: {booking['amenities']}\n"
+            f"**Total Fare**: ₹{total_price:,} INR\n"
+            f"**Status**: `PENDING PAYMENT`\n"
             f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-            f"💳 **PAYMENT INSTRUCTIONS**:\n"
+            f"**PAYMENT INSTRUCTIONS**:\n"
             f"• Quick Link: {payment_link}\n"
             f"• Or simply tell me: *'Pay ₹{total_price:,} for Hotel PNR {pnr} using UPI'* to confirm your room now!"
         )
@@ -118,7 +119,7 @@ def check_hotel_booking_tool(pnr: str, user_id: str = "usr_guest") -> str:
             return f"No hotel reservation found for PNR: '{pnr}'."
         
         return (
-            f"📌 **HOTEL RESERVATION STATUS FOR `{booking['pnr']}`**:\n"
+            f"**HOTEL RESERVATION STATUS FOR `{booking['pnr']}`**:\n"
             f"• Guest: {booking['guest_name']} ({booking['guests_count']} Guests)\n"
             f"• Hotel: {booking['hotel_name']}\n"
             f"• Room: {booking['room_type']}\n"
@@ -147,7 +148,7 @@ def pay_hotel_booking_tool(pnr: str, payment_method: str = "UPI", user_id: str =
         updated = hotel_service.update_hotel_payment_status(pnr, new_status="PAID")
         
         return (
-            f"✅ **HOTEL PAYMENT CONFIRMED & ROOM BOOKED!**\n"
+            f"**HOTEL PAYMENT CONFIRMED & ROOM BOOKED**\n"
             f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
             f"📌 **Hotel PNR**: `{updated['pnr']}`\n"
             f"👤 **Guest**: {updated['guest_name']}\n"

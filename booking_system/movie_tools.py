@@ -23,15 +23,15 @@ def search_movies_tool(city: str = "Delhi", movie_name: Optional[str] = None) ->
         if not movies:
             return f"No movie showtimes found in {city}."
         
-        lines = [f"🎬 **Now Showing in Cinemas ({city.capitalize()})**:\n"]
+        lines = [f"**Now Showing in Cinemas ({city.capitalize()})**:\n"]
         for m in movies:
             lines.append(
                 f"• **{m['movie_title']}** ({m['rating']} | {m['genre']})\n"
-                f"  🏛️ Cinema: {m['cinema_hall']} ({m['screen_type']})\n"
-                f"  🕒 Showtimes: {m['showtimes']}\n"
-                f"  💰 Fare: ₹{m['price_per_ticket']:,} per ticket | Format: {m['language']}\n"
+                f"  Cinema: {m['cinema_hall']} ({m['screen_type']})\n"
+                f"  Showtimes: {m['showtimes']}\n"
+                f"  Fare: ₹{m['price_per_ticket']:,} per ticket | Format: {m['language']}\n"
             )
-        lines.append("💡 *Tell me which movie & showtime you want to reserve tickets for!*")
+        lines.append("*Tell me which movie & showtime you want to reserve tickets for!*")
         return "\n".join(lines)
     except Exception as err:
         return f"Error searching movies: {str(err)}"
@@ -77,19 +77,19 @@ def book_movie_tool(
         payment_link = booking["payment_url"]
         
         res = (
-            f"🎉 **MOVIE TICKETS RESERVED SUCCESSFULLY!**\n"
+            f"**MOVIE TICKETS RESERVED SUCCESSFULLY**\n"
             f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-            f"📌 **Cinema PNR Code**: `{pnr}`\n"
-            f"🎬 **Movie**: {booking['movie_title']}\n"
-            f"🏛️ **Theater**: {booking['cinema_hall']}\n"
-            f"🎟️ **Format**: {booking['screen_type']}\n"
-            f"📅 **Show Date & Time**: {show_date} @ {preferred_time}\n"
-            f"💺 **Assigned Seats**: `{booking['seats']}` ({booking['tickets_count']} Ticket(s))\n"
-            f"👤 **Customer**: {customer_name}\n"
-            f"💰 **Total Fare**: ₹{total_price:,} INR\n"
-            f"⏳ **Status**: `PENDING PAYMENT`\n"
+            f"**Cinema PNR Code**: `{pnr}`\n"
+            f"**Movie**: {booking['movie_title']}\n"
+            f"**Theater**: {booking['cinema_hall']}\n"
+            f"**Format**: {booking['screen_type']}\n"
+            f"**Show Date & Time**: {show_date} @ {preferred_time}\n"
+            f"**Assigned Seats**: `{booking['seats']}` ({booking['tickets_count']} Ticket(s))\n"
+            f"**Customer**: {customer_name}\n"
+            f"**Total Fare**: ₹{total_price:,} INR\n"
+            f"**Status**: `PENDING PAYMENT`\n"
             f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-            f"💳 **PAYMENT INSTRUCTIONS**:\n"
+            f"**PAYMENT INSTRUCTIONS**:\n"
             f"• Quick Link: {payment_link}\n"
             f"• Or simply tell me: *'Pay ₹{total_price:,} for Movie PNR {pnr} using UPI'* to get your digital e-tickets now!"
         )
@@ -112,7 +112,7 @@ def check_movie_booking_tool(pnr: str, user_id: str = "usr_guest") -> str:
             return f"No movie booking found for PNR: '{pnr}'."
         
         return (
-            f"📌 **MOVIE TICKET STATUS FOR `{booking['pnr']}`**:\n"
+            f"**MOVIE TICKET STATUS FOR `{booking['pnr']}`**:\n"
             f"• Movie: {booking['movie_title']}\n"
             f"• Theater: {booking['cinema_hall']} ({booking['screen_type']})\n"
             f"• Showtime: {booking['show_date']} @ {booking['show_time']}\n"
@@ -142,7 +142,7 @@ def pay_movie_booking_tool(pnr: str, payment_method: str = "UPI", user_id: str =
         updated = movie_service.update_movie_payment_status(pnr, new_status="PAID")
         
         return (
-            f"🎟️ **CINEMA E-TICKET CONFIRMED & ISSUED!**\n"
+            f"**CINEMA E-TICKET CONFIRMED & ISSUED**\n"
             f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
             f"📌 **Cinema PNR**: `{updated['pnr']}`\n"
             f"🎬 **Movie**: {updated['movie_title']}\n"

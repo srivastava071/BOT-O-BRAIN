@@ -36,7 +36,7 @@
         <div class="nav-controls">
             <button class="nav-btn btn-services" id="toggleServicesBtn" onclick="openServicesModal()" title="AI Services Hub">
                 <i class="fa-solid fa-bolt-lightning" style="color: #f59e0b;"></i>
-                <span class="nav-btn-label">⚡ AI Services</span>
+                <span class="nav-btn-label">AI Services</span>
             </button>
 
             <button class="nav-btn btn-vault" id="toggleVaultBtn" title="Memory Vault">
@@ -98,9 +98,9 @@
                     <div class="hero-card-icon">
                         <i class="fa-solid fa-comments"></i>
                     </div>
-                    <h3>💬 Chat with Bot</h3>
+                    <h3>Chat with Bot</h3>
                     <p>Start a conversation with your AI assistant equipped with dual vector memory &amp; tool execution.</p>
-                    <button type="button" class="btn-hero-action btn-hero-chat" onclick="event.stopPropagation(); openChatSection();">Open Chatbot Assistant ➔</button>
+                    <button type="button" class="btn-hero-action btn-hero-chat" onclick="event.stopPropagation(); openChatSection();">Open Chatbot Assistant</button>
                 </div>
 
                 <!-- Option 2: SkyBot Flight Concierge -->
@@ -108,9 +108,9 @@
                     <div class="hero-card-icon" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8;">
                         <i class="fa-solid fa-plane-up"></i>
                     </div>
-                    <h3 style="color: #38bdf8;">✈️ SkyBot Flight Concierge</h3>
+                    <h3 style="color: #38bdf8;">SkyBot Flight Concierge</h3>
                     <p>Search live flights, compare airline fares, check flight status, and reserve tickets.</p>
-                    <button type="button" class="btn-hero-action" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8;" onclick="event.stopPropagation(); openFlightBot();">Open SkyBot ➔</button>
+                    <button type="button" class="btn-hero-action" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8;" onclick="event.stopPropagation(); openFlightBot();">Open SkyBot</button>
                 </div>
 
                 <!-- Option 3: GrandStay Hotel Concierge -->
@@ -118,9 +118,9 @@
                     <div class="hero-card-icon" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b;">
                         <i class="fa-solid fa-hotel"></i>
                     </div>
-                    <h3 style="color: #fbbf24;">🏨 GrandStay Hotel Concierge</h3>
+                    <h3 style="color: #fbbf24;">GrandStay Hotel Concierge</h3>
                     <p>Search live hotels, find cheapest budget stays, luxury beach resorts, and book rooms with PNR.</p>
-                    <button type="button" class="btn-hero-action" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b;" onclick="event.stopPropagation(); openHotelBot();">Open GrandStay ➔</button>
+                    <button type="button" class="btn-hero-action" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b;" onclick="event.stopPropagation(); openHotelBot();">Open GrandStay</button>
                 </div>
 
                 <!-- Option 4: AI Services Hub -->
@@ -128,9 +128,9 @@
                     <div class="hero-card-icon">
                         <i class="fa-solid fa-bolt-lightning"></i>
                     </div>
-                    <h3>⚡ AI Services Hub</h3>
+                    <h3>AI Services Hub</h3>
                     <p>Bookings, Messaging, Memory Vault, Knowledge Base &amp; more AI-powered automations.</p>
-                    <button type="button" class="btn-hero-action btn-hero-services" onclick="event.stopPropagation(); openServicesModal();">Explore AI Services ➔</button>
+                    <button type="button" class="btn-hero-action btn-hero-services" onclick="event.stopPropagation(); openServicesModal();">Explore AI Services</button>
                 </div>
 
             </div>
@@ -594,13 +594,13 @@
                 <div class="sky-sidebar-heading" style="color: #f59e0b;"><i class="fa-solid fa-tags"></i> Quick Filters</div>
                 <div class="sky-pinned-list">
                     <div class="sky-dest-chip hotel-dest-chip" style="width: 100%; margin-bottom: 6px;" onclick="window.sendHotelPrompt('Show me the cheapest budget hotels in Delhi')">
-                        💰 Cheapest Hotels
+                        <i class="fa-solid fa-coins"></i> Cheapest Hotels
                     </div>
                     <div class="sky-dest-chip hotel-dest-chip" style="width: 100%; margin-bottom: 6px;" onclick="window.sendHotelPrompt('Show me luxury 5-star resorts in Goa with beach access')">
-                        👑 5-Star Beach Resorts
+                        <i class="fa-solid fa-crown"></i> 5-Star Beach Resorts
                     </div>
                     <div class="sky-dest-chip hotel-dest-chip" style="width: 100%;" onclick="window.sendHotelPrompt('Check my hotel PNR booking status')">
-                        📌 Check Hotel PNR
+                        <i class="fa-solid fa-receipt"></i> Check Hotel PNR
                     </div>
                 </div>
             </div>
@@ -663,9 +663,9 @@
                                 <div class="sky-input-group">
                                     <i class="fa-solid fa-filter" style="color: #f59e0b;"></i>
                                     <select id="hbSort">
-                                        <option value="cheapest">💰 Cheapest / Budget</option>
-                                        <option value="luxury">👑 Luxury 5-Star</option>
-                                        <option value="default">⭐ Top Rated</option>
+                                        <option value="cheapest">Cheapest / Budget</option>
+                                        <option value="luxury">Luxury 5-Star</option>
+                                        <option value="default">Top Rated</option>
                                     </select>
                                 </div>
                             </div>
@@ -890,7 +890,7 @@
             <!-- SUB-CATEGORY SELECTOR SUBMENU -->
             <div class="service-submenu-box hidden" id="serviceSubMenuBox">
                 <div class="service-action-header">
-                    <span id="subMenuTitle">🎫 Bookings &amp; Reservations</span>
+                    <span id="subMenuTitle"><i class="fa-solid fa-ticket-simple"></i> Bookings &amp; Reservations</span>
                     <button class="btn-link" onclick="backToCategories()"><i class="fa-solid fa-arrow-left"></i> Back to Categories</button>
                 </div>
                 <div class="services-grid" id="subMenuGrid">
@@ -901,7 +901,7 @@
             <!-- SERVICE QUICK ACTION FORM CONTAINER -->
             <div class="service-action-box hidden" id="serviceActionBox">
                 <div class="service-action-header">
-                    <span id="serviceActionTitle">✈️ Book Flight Ticket</span>
+                    <span id="serviceActionTitle"><i class="fa-solid fa-plane"></i> Book Flight Ticket</span>
                     <button class="btn-link" onclick="backToSubMenu()"><i class="fa-solid fa-arrow-left"></i> Back to Options</button>
                 </div>
 
