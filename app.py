@@ -39,6 +39,11 @@ import tools
 
 load_dotenv()
 
+import sys
+for _stream in (sys.stdout, sys.stderr):
+    if hasattr(_stream, "reconfigure"):
+        _stream.reconfigure(encoding="utf-8", errors="replace")
+
 # ---------------------------------------------------------------------------
 # 1. Models: chat (Groq/OpenAI) + embeddings (OpenAI or local)
 # ---------------------------------------------------------------------------
@@ -47,95 +52,72 @@ OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 COHERE_API_KEY = os.getenv("COHERE_API_KEY")
 
-_GROQ_LLM = (
-    ChatOpenAI(
-        model="llama-3.3-70b-versatile",
-        temperature=0.3,
-        api_key=GROQ_API_KEY,
-        base_url="https://api.groq.com/openai/v1",
-        max_retries=1,
-    )
+def _build_chat_model(model: str, base_url: str, api_key: Optional[str], temp: float = 0.3) -> Optional[ChatOpenAI]:
+    if not api_key:
+        return None
+    try:
+        return ChatOpenAI(
+            model=model,
+            temperature=temp,
+            api_key=api_key,
+            base_url=base_url,
+            max_retries=1,
+        )
+    except Exception:
+        return None
+
+# Candidate model lists for Groq (high reasoning and fast extraction)
+_GROQ_MODELS = [
+    "openai/gpt-oss-120b",
+    "llama-3.3-70b-versatile",
+    "qwen/qwen3.8-27b",
+    "openai/gpt-oss-20b",
+    "groq/compound",
+]
+_GROQ_FAST_MODELS = [
+    "openai/gpt-oss-20b",
+    "llama-3.1-8b-instant",
+    "groq/compound-mini",
+]
+
+_PRIMARY_LLMS = [
+    (_build_chat_model(m, "https://api.groq.com/openai/v1", GROQ_API_KEY, 0.3), f"Groq ({m})")
+    for m in _GROQ_MODELS
     if GROQ_API_KEY
-    else None
-)
+]
 
-_GROQ_FAST_LLM = (
-    ChatOpenAI(
-        model="llama-3.1-8b-instant",
-        temperature=0.1,
-        api_key=GROQ_API_KEY,
-        base_url="https://api.groq.com/openai/v1",
-        max_retries=1,
-    )
+_FAST_LLMS = [
+    (_build_chat_model(m, "https://api.groq.com/openai/v1", GROQ_API_KEY, 0.1), f"Groq Fast ({m})")
+    for m in _GROQ_FAST_MODELS
     if GROQ_API_KEY
-    else None
-)
+]
 
-_GROQ_VISION_LLM = (
-    ChatOpenAI(
-        model="llama-3.2-11b-vision-preview",
-        temperature=0.2,
-        api_key=GROQ_API_KEY,
-        base_url="https://api.groq.com/openai/v1",
-        max_retries=1,
-    )
-    if GROQ_API_KEY
-    else None
-)
+_FALLBACK_LLMS = []
+if OPENROUTER_API_KEY:
+    for m in ["nvidia/nemotron-3.5-lightning:free", "deepseek/deepseek-r1:free", "liquid/lfm-2.5-2.6b:free"]:
+        _FALLBACK_LLMS.append((_build_chat_model(m, "https://openrouter.ai/api/v1", OPENROUTER_API_KEY, 0.3), f"OpenRouter ({m})"))
 
-_GROQ_VISION_90B_LLM = (
-    ChatOpenAI(
-        model="llama-3.2-90b-vision-preview",
-        temperature=0.2,
-        api_key=GROQ_API_KEY,
-        base_url="https://api.groq.com/openai/v1",
-        max_retries=1,
-    )
-    if GROQ_API_KEY
-    else None
-)
+if COHERE_API_KEY:
+    for m in ["command-r-08-2024", "command-r"]:
+        _FALLBACK_LLMS.append((_build_chat_model(m, "https://api.cohere.com/compatibility/v1", COHERE_API_KEY, 0.3), f"Cohere ({m})"))
 
-_OPENROUTER_LLM = (
-    ChatOpenAI(
-        model="deepseek/deepseek-r1:free",
-        temperature=0.3,
-        api_key=OPENROUTER_API_KEY,
-        base_url="https://openrouter.ai/api/v1",
-        max_retries=1,
-    )
-    if OPENROUTER_API_KEY
-    else None
-)
+if OPENAI_API_KEY and not OPENAI_API_KEY.startswith("sk-proj-"):
+    _FALLBACK_LLMS.append((_build_chat_model("gpt-4o-mini", "https://api.openai.com/v1", OPENAI_API_KEY, 0.3), "OpenAI (gpt-4o-mini)"))
 
-_OPENROUTER_VISION_LLM = (
-    ChatOpenAI(
-        model="google/gemini-2.5-flash:free",
-        temperature=0.2,
-        api_key=OPENROUTER_API_KEY,
-        base_url="https://openrouter.ai/api/v1",
-        max_retries=1,
-    )
-    if OPENROUTER_API_KEY
-    else None
-)
+# Backwards compatibility references
+_GROQ_LLM = _PRIMARY_LLMS[0][0] if _PRIMARY_LLMS else None
+_GROQ_FAST_LLM = _FAST_LLMS[0][0] if _FAST_LLMS else None
+_OPENROUTER_LLM = _FALLBACK_LLMS[0][0] if _FALLBACK_LLMS else None
+_COHERE_LLM = None
+_OPENAI_LLM = None
 
-_COHERE_LLM = (
-    ChatOpenAI(
-        model="command-r-plus",
-        temperature=0.3,
-        api_key=COHERE_API_KEY,
-        base_url="https://api.cohere.com/v2",
-        max_retries=1,
-    )
-    if COHERE_API_KEY
-    else None
-)
-
-_OPENAI_LLM = (
-    ChatOpenAI(model="gpt-4o-mini", temperature=0.3, api_key=OPENAI_API_KEY)
-    if OPENAI_API_KEY
-    else None
-)
+# Vision models
+_VISION_LLMS = []
+if GROQ_API_KEY:
+    for vm in ["llama-3.2-90b-vision-preview", "llama-3.2-11b-vision-preview"]:
+        _VISION_LLMS.append((_build_chat_model(vm, "https://api.groq.com/openai/v1", GROQ_API_KEY, 0.2), f"Groq Vision ({vm})"))
+if OPENROUTER_API_KEY:
+    _VISION_LLMS.append((_build_chat_model("google/gemini-2.5-flash:free", "https://openrouter.ai/api/v1", OPENROUTER_API_KEY, 0.2), "OpenRouter Vision"))
 
 
 def has_image_message(messages: List[BaseMessage]) -> bool:
@@ -184,58 +166,27 @@ def invoke_llm(messages: List[BaseMessage], fast: bool = False) -> BaseMessage:
 
     # 1. Vision LLM if image is attached
     if has_image:
-        if _GROQ_VISION_90B_LLM:
-            try:
-                return _GROQ_VISION_90B_LLM.invoke(messages)
-            except Exception as err:
-                errors.append(f"Groq Vision 90B: {err}")
-        if _GROQ_VISION_LLM:
-            try:
-                return _GROQ_VISION_LLM.invoke(messages)
-            except Exception as err:
-                errors.append(f"Groq Vision 11B: {err}")
-        if _OPENROUTER_VISION_LLM:
-            try:
-                return _OPENROUTER_VISION_LLM.invoke(messages)
-            except Exception as err:
-                errors.append(f"OpenRouter Vision: {err}")
+        for vision_llm, label in _VISION_LLMS:
+            if vision_llm is not None:
+                try:
+                    return vision_llm.invoke(messages)
+                except Exception as err:
+                    errors.append(f"{label}: {err}")
 
-    # 2. Try Fast Groq 8B, fallback to 70B
-    if GROQ_API_KEY:
-        llm_input = clean_messages_for_text_llm(messages) if has_image else messages
-        if fast and _GROQ_FAST_LLM:
+    # 2. Text LLMs with ordered cascading candidates
+    llm_input = clean_messages_for_text_llm(messages) if has_image else messages
+
+    if fast:
+        candidate_llms = _FAST_LLMS + _PRIMARY_LLMS + _FALLBACK_LLMS
+    else:
+        candidate_llms = _PRIMARY_LLMS + _FAST_LLMS + _FALLBACK_LLMS
+
+    for candidate, label in candidate_llms:
+        if candidate is not None:
             try:
-                return _GROQ_FAST_LLM.invoke(llm_input)
+                return candidate.invoke(llm_input)
             except Exception as err:
-                errors.append(f"Groq 8B: {err}")
-        if _GROQ_LLM:
-            try:
-                return _GROQ_LLM.invoke(llm_input)
-            except Exception as err:
-                errors.append(f"Groq 70B: {err}")
-
-    # 3. OpenRouter
-    if _OPENROUTER_LLM:
-        try:
-            llm_input = clean_messages_for_text_llm(messages) if has_image else messages
-            return _OPENROUTER_LLM.invoke(llm_input)
-        except Exception as err:
-            errors.append(f"OpenRouter: {err}")
-
-    # 4. Cohere
-    if _COHERE_LLM:
-        try:
-            llm_input = clean_messages_for_text_llm(messages) if has_image else messages
-            return _COHERE_LLM.invoke(llm_input)
-        except Exception as err:
-            errors.append(f"Cohere: {err}")
-
-    # 5. OpenAI
-    if _OPENAI_LLM:
-        try:
-            return _OPENAI_LLM.invoke(messages)
-        except Exception as err:
-            errors.append(f"OpenAI: {err}")
+                errors.append(f"{label}: {err}")
 
     raise RuntimeError(f"All LLM providers failed: {errors}")
 

@@ -1,0 +1,32 @@
+# =============================================================================
+# BOT-O-BRAIN — Requirements & Dependencies
+# =============================================================================
+
+# Web Framework & API Server
+fastapi>=0.115.0
+uvicorn[standard]>=0.30.0
+pydantic>=2.8.0
+python-multipart>=0.0.9
+requests>=2.31.0
+
+# LangGraph & Core Agentic AI Orchestration
+langgraph>=0.2.0
+langchain>=0.3.0
+langchain-core>=0.3.0
+langchain-openai>=0.2.0
+
+# Vector DB & Embeddings
+chromadb>=0.5.0
+langchain-chroma>=0.1.4
+langchain-huggingface>=0.1.0
+sentence-transformers>=3.0.0
+
+# Document RAG Parsing
+pypdf>=4.0.0
+
+# Agentic Tools & Services
+duckduckgo-search>=6.0.0
+
+# Authentication, Security & Utilities
+python-dotenv>=1.0.1
+bcrypt>=4.2.0
