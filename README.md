@@ -349,7 +349,7 @@ cd ProjectMemoryChatbot
 # Install required dependencies
 pip install fastapi uvicorn langgraph langchain-core langchain-openai \
             langchain-chroma chromadb python-dotenv langchain-huggingface \
-            sentence-transformers pypdf requests duckduckgo-search
+            sentence-transformers pypdf requests duckduckgo-search bcrypt
 ```
 
 ### 3. Environment Configuration (`.env`)

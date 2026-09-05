@@ -164,48 +164,56 @@ def process_movie_reservation(
     seat_list = [f"{row_letter}{start_num + i}" for i in range(max(1, tickets_count))]
     seats_str = ", ".join(seat_list)
 
-    pnr = f"PNR-MOV{random.randint(100000, 999999)}"
     booking_id = str(uuid.uuid4())
     now_str = datetime.now(timezone.utc).isoformat()
 
     price_per_tix = selected_movie["price_per_ticket"]
     total_price = price_per_tix * max(1, tickets_count)
 
-    booking_record = {
-        "id": booking_id,
-        "pnr": pnr,
-        "user_id": user_id,
-        "city": city.capitalize(),
-        "movie_title": selected_movie["movie_title"],
-        "cinema_hall": selected_movie["cinema_hall"],
-        "screen_type": selected_movie["screen_type"],
-        "show_date": show_date,
-        "show_time": preferred_time,
-        "seats": seats_str,
-        "tickets_count": max(1, tickets_count),
-        "price_per_ticket_inr": price_per_tix,
-        "total_price_inr": total_price,
-        "customer_name": customer_name,
-        "payment_status": "PENDING_PAYMENT",
-        "created_at": now_str,
-        "payment_url": f"https://bot-o-brain.ai/pay/movie/{pnr}"
-    }
-
-    with get_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute("""
-            INSERT INTO movie_bookings (
-                id, pnr, user_id, city, movie_title, cinema_hall, screen_type,
-                show_date, show_time, seats, tickets_count, price_per_ticket_inr,
-                total_price_inr, customer_name, payment_status, created_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (
-            booking_id, pnr, user_id, booking_record["city"], booking_record["movie_title"],
-            booking_record["cinema_hall"], booking_record["screen_type"], show_date, preferred_time,
-            seats_str, max(1, tickets_count), price_per_tix, total_price, customer_name,
-            "PENDING_PAYMENT", now_str
-        ))
-        conn.commit()
+    # pnr is UNIQUE NOT NULL; retry on the (rare) collision instead of letting
+    # the IntegrityError abort the whole reservation.
+    for attempt in range(10):
+        pnr = f"PNR-MOV{random.randint(100000, 999999)}"
+        booking_record = {
+            "id": booking_id,
+            "pnr": pnr,
+            "user_id": user_id,
+            "city": city.capitalize(),
+            "movie_title": selected_movie["movie_title"],
+            "cinema_hall": selected_movie["cinema_hall"],
+            "screen_type": selected_movie["screen_type"],
+            "show_date": show_date,
+            "show_time": preferred_time,
+            "seats": seats_str,
+            "tickets_count": max(1, tickets_count),
+            "price_per_ticket_inr": price_per_tix,
+            "total_price_inr": total_price,
+            "customer_name": customer_name,
+            "payment_status": "PENDING_PAYMENT",
+            "created_at": now_str,
+            "payment_url": f"https://bot-o-brain.ai/pay/movie/{pnr}"
+        }
+        try:
+            with get_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute("""
+                    INSERT INTO movie_bookings (
+                        id, pnr, user_id, city, movie_title, cinema_hall, screen_type,
+                        show_date, show_time, seats, tickets_count, price_per_ticket_inr,
+                        total_price_inr, customer_name, payment_status, created_at
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """, (
+                    booking_id, pnr, user_id, booking_record["city"], booking_record["movie_title"],
+                    booking_record["cinema_hall"], booking_record["screen_type"], show_date, preferred_time,
+                    seats_str, max(1, tickets_count), price_per_tix, total_price, customer_name,
+                    "PENDING_PAYMENT", now_str
+                ))
+                conn.commit()
+            break
+        except sqlite3.IntegrityError:
+            continue
+    else:
+        raise RuntimeError("Failed to record movie booking in database.")
 
     return booking_record
 
@@ -230,3 +238,13 @@ def update_movie_payment_status(pnr: str, new_status: str = "PAID") -> Optional[
         cursor.execute("UPDATE movie_bookings SET payment_status = ? WHERE pnr = ? OR id = ?", (new_status, pnr_clean, pnr_clean))
         conn.commit()
     return get_movie_booking_by_pnr(pnr_clean)
+
+
+def get_user_movie_bookings(user_id: str = "usr_guest") -> List[Dict[str, Any]]:
+    """Gets all cinema ticket reservations for a user."""
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM movie_bookings WHERE user_id = ? ORDER BY created_at DESC", (user_id,))
+        rows = cursor.fetchall()
+        return [dict(r) for r in rows]
+

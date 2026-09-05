@@ -107,7 +107,9 @@ def check_flight_booking_tool(pnr: str, user_id: str = "usr_guest") -> str:
         booking = booking_db.get_booking_by_pnr(pnr)
         if not booking:
             return f"No flight reservation found for PNR code `{pnr}`."
-        
+        if booking.get("user_id") != user_id:
+            return f"No flight reservation found for PNR code `{pnr}`."
+
         status_text = "CONFIRMED & ISSUED" if booking["payment_status"] == "PAID" else "PENDING PAYMENT"
         return (
             f"**Booking Details for PNR**: `{booking['pnr']}`\n"
@@ -132,6 +134,9 @@ def pay_flight_booking_tool(pnr: str, payment_method: str = "UPI", user_id: str 
         user_id: Active user ID.
     """
     try:
+        existing = booking_db.get_booking_by_pnr(pnr)
+        if not existing or existing.get("user_id") != user_id:
+            return f"No flight reservation found for PNR code `{pnr}`."
         updated = flight_service.complete_booking_payment(pnr, payment_method=payment_method)
         return (
             f"**PAYMENT SUCCESSFUL! E-TICKET CONFIRMED**\n"

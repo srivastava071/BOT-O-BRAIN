@@ -108,9 +108,9 @@ def check_movie_booking_tool(pnr: str, user_id: str = "usr_guest") -> str:
     """
     try:
         booking = movie_service.get_movie_booking_by_pnr(pnr)
-        if not booking:
+        if not booking or booking.get("user_id") != user_id:
             return f"No movie booking found for PNR: '{pnr}'."
-        
+
         return (
             f"**MOVIE TICKET STATUS FOR `{booking['pnr']}`**:\n"
             f"• Movie: {booking['movie_title']}\n"
@@ -136,9 +136,9 @@ def pay_movie_booking_tool(pnr: str, payment_method: str = "UPI", user_id: str =
     """
     try:
         booking = movie_service.get_movie_booking_by_pnr(pnr)
-        if not booking:
+        if not booking or booking.get("user_id") != user_id:
             return f"Cannot process payment. No movie booking found for PNR: '{pnr}'."
-        
+
         updated = movie_service.update_movie_payment_status(pnr, new_status="PAID")
         
         return (

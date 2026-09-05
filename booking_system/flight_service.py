@@ -258,31 +258,37 @@ def process_flight_reservation(
     if not selected_flight:
         selected_flight = available_flights[0]
 
-    pnr = generate_pnr()
     booking_id = f"bk_{uuid.uuid4().hex[:8]}"
     price = selected_flight["price_inr"]
-    payment_url = f"http://127.0.0.1:8000/pay/{pnr}"
 
+    # generate_pnr() only has a 9,000-value keyspace, so collisions on the
+    # UNIQUE pnr column are realistic — retry with a fresh code instead of
+    # silently dropping the booking (save_booking returns False on conflict).
+    success = False
+    for _attempt in range(10):
+        pnr = generate_pnr()
+        payment_url = f"http://127.0.0.1:8000/pay/{pnr}"
+        booking_record = {
+            "id": booking_id,
+            "pnr": pnr,
+            "user_id": user_id,
+            "origin": selected_flight["origin"],
+            "destination": selected_flight["destination"],
+            "travel_date": travel_date,
+            "flight_number": selected_flight["flight_number"],
+            "airline": selected_flight["airline"],
+            "departure_time": selected_flight["departure_time"],
+            "arrival_time": selected_flight["arrival_time"],
+            "passenger_name": passenger_name,
+            "price_inr": price,
+            "payment_status": "PENDING_PAYMENT",
+            "payment_url": payment_url,
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        success = booking_db.save_booking(booking_record)
+        if success:
+            break
 
-    booking_record = {
-        "id": booking_id,
-        "pnr": pnr,
-        "user_id": user_id,
-        "origin": selected_flight["origin"],
-        "destination": selected_flight["destination"],
-        "travel_date": travel_date,
-        "flight_number": selected_flight["flight_number"],
-        "airline": selected_flight["airline"],
-        "departure_time": selected_flight["departure_time"],
-        "arrival_time": selected_flight["arrival_time"],
-        "passenger_name": passenger_name,
-        "price_inr": price,
-        "payment_status": "PENDING_PAYMENT",
-        "payment_url": payment_url,
-        "created_at": datetime.now(timezone.utc).isoformat()
-    }
-
-    success = booking_db.save_booking(booking_record)
     if not success:
         raise RuntimeError("Failed to record booking in database.")
 

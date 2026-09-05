@@ -50,10 +50,35 @@ def web_search_tool(query: str) -> str:
 # ---------------------------------------------------------------------------
 # 2. Python REPL / Math Calculator Tool
 # ---------------------------------------------------------------------------
+# Deliberately tiny allowlist — no __import__, open, exec, eval, compile,
+# globals/locals/vars, getattr/setattr/delattr, or any other builtin that
+# could reach the filesystem, process, or interpreter internals.
+import builtins as _builtins_module
+
+_SAFE_BUILTINS = {
+    name: getattr(_builtins_module, name)
+    for name in [
+        "abs", "all", "any", "bool", "dict", "divmod", "enumerate", "float",
+        "int", "len", "list", "max", "min", "pow", "print", "range", "round",
+        "set", "sorted", "str", "sum", "tuple", "zip", "True", "False", "None",
+    ]
+    if hasattr(_builtins_module, name)
+}
+
+# Any of these appearing in the snippet means "don't even try" — blocks the
+# classic exec-sandbox escapes (import, dunder attribute access, file/process
+# access) before the code ever reaches exec().
+_BLOCKED_PATTERNS = [
+    "import", "__", "open(", "exec(", "eval(", "compile(", "globals(",
+    "locals(", "getattr(", "setattr(", "delattr(", "vars(", "input(",
+    "breakpoint(", "subprocess", "os.",
+]
+
+
 @tool
 def python_repl_tool(code: str) -> str:
     """Safely execute Python code to perform calculations, data processing, string manipulations, or mathematical algorithms.
-    
+
     Args:
         code: The Python code snippet or mathematical expression to execute.
     """
@@ -77,20 +102,32 @@ def python_repl_tool(code: str) -> str:
             final_val = p * ((1 + r) ** t)
             return f"Calculated Compound Interest: Principal=${p:,.2f}, Rate={r_percent}%, Time={int(t)} years -> Final Amount = ${final_val:,.2f} (Interest Earned = ${final_val - p:,.2f})"
 
-    has_statement_keywords = any(kw in clean_code for kw in ["import ", "def ", "class ", "for ", "while ", "if ", "=", ";", "print("])
+    lowered = clean_code.lower()
+    if any(pat in lowered for pat in _BLOCKED_PATTERNS):
+        # Still try to salvage a plain arithmetic expression out of the message
+        # (this is the common case: free-form chat text containing a trigger
+        # word like "python" alongside a calculation, not actual code).
+        expr = re.sub(r"[^0-9\+\-\*\/\%\(\)\.]", "", clean_code).strip()
+        if expr and len(expr) >= 2:
+            try:
+                return f"Calculated Result: {eval(expr, {'__builtins__': {}})}"
+            except Exception:
+                pass
+        return "That request isn't supported by the sandboxed calculator (no imports, file, or system access allowed)."
+
+    has_statement_keywords = any(kw in clean_code for kw in ["def ", "for ", "while ", "if ", "=", ";", "print("])
     if not has_statement_keywords and "\n" not in clean_code:
         clean_code = f"print({clean_code})"
 
     buffer = io.StringIO()
-    # Define safe globals
     safe_globals = {
-        "__builtins__": __builtins__,
+        "__builtins__": _SAFE_BUILTINS,
         "math": __import__("math"),
         "datetime": __import__("datetime"),
         "json": __import__("json"),
         "re": __import__("re"),
     }
-    
+
     try:
         with contextlib.redirect_stdout(buffer):
             exec(clean_code, safe_globals)
@@ -98,7 +135,6 @@ def python_repl_tool(code: str) -> str:
         return output if output else "Execution successful."
     except Exception:
         # Fallback to evaluating extracted mathematical expression
-        import re
         expr = re.sub(r"[^0-9\+\-\*\/\%\(\)\.]", "", clean_code).strip()
         if expr and len(expr) >= 2:
             try:

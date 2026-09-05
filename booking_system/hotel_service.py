@@ -179,48 +179,54 @@ def process_hotel_reservation(
                 selected_hotel = h
                 break
 
-    pnr = f"PNR-HTL{random.randint(100000, 999999)}"
     booking_id = str(uuid.uuid4())
     now_str = datetime.now(timezone.utc).isoformat()
     amenities_str = ", ".join(selected_hotel["amenities"])
 
-    booking_record = {
-        "id": booking_id,
-        "pnr": pnr,
-        "user_id": user_id,
-        "city": city.capitalize(),
-        "hotel_name": selected_hotel["name"],
-        "room_type": selected_hotel["room_type"],
-        "check_in": check_in,
-        "check_out": check_out,
-        "guest_name": guest_name,
-        "guests_count": guests_count,
-        "nights_count": max(1, nights_count),
-        "price_per_night_inr": selected_hotel["price_per_night"],
-        "total_price_inr": selected_hotel["total_price_inr"],
-        "payment_status": "PENDING_PAYMENT",
-        "amenities": amenities_str,
-        "created_at": now_str,
-        "payment_url": f"https://bot-o-brain.ai/pay/hotel/{pnr}"
-    }
+    # pnr is UNIQUE NOT NULL; retry on the (rare) collision instead of letting
+    # the IntegrityError abort the whole reservation.
+    for attempt in range(10):
+        pnr = f"PNR-HTL{random.randint(100000, 999999)}"
+        booking_record = {
+            "id": booking_id,
+            "pnr": pnr,
+            "user_id": user_id,
+            "city": city.capitalize(),
+            "hotel_name": selected_hotel["name"],
+            "room_type": selected_hotel["room_type"],
+            "check_in": check_in,
+            "check_out": check_out,
+            "guest_name": guest_name,
+            "guests_count": guests_count,
+            "nights_count": max(1, nights_count),
+            "price_per_night_inr": selected_hotel["price_per_night"],
+            "total_price_inr": selected_hotel["total_price_inr"],
+            "payment_status": "PENDING_PAYMENT",
+            "amenities": amenities_str,
+            "created_at": now_str,
+            "payment_url": f"https://bot-o-brain.ai/pay/hotel/{pnr}"
+        }
+        try:
+            with get_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute("""
+                    INSERT INTO hotel_bookings (
+                        id, pnr, user_id, city, hotel_name, room_type, check_in, check_out,
+                        guest_name, guests_count, nights_count, price_per_night_inr,
+                        total_price_inr, payment_status, amenities, created_at
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """, (
+                    booking_id, pnr, user_id, booking_record["city"], booking_record["hotel_name"],
+                    booking_record["room_type"], check_in, check_out, guest_name, guests_count,
+                    max(1, nights_count), selected_hotel["price_per_night"], selected_hotel["total_price_inr"],
+                    "PENDING_PAYMENT", amenities_str, now_str
+                ))
+                conn.commit()
+            return booking_record
+        except sqlite3.IntegrityError:
+            continue
 
-    with get_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute("""
-            INSERT INTO hotel_bookings (
-                id, pnr, user_id, city, hotel_name, room_type, check_in, check_out,
-                guest_name, guests_count, nights_count, price_per_night_inr,
-                total_price_inr, payment_status, amenities, created_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (
-            booking_id, pnr, user_id, booking_record["city"], booking_record["hotel_name"],
-            booking_record["room_type"], check_in, check_out, guest_name, guests_count,
-            max(1, nights_count), selected_hotel["price_per_night"], selected_hotel["total_price_inr"],
-            "PENDING_PAYMENT", amenities_str, now_str
-        ))
-        conn.commit()
-
-    return booking_record
+    raise RuntimeError("Failed to record hotel booking in database.")
 
 
 def get_hotel_booking_by_pnr(pnr: str) -> Optional[Dict[str, Any]]:
@@ -243,3 +249,13 @@ def update_hotel_payment_status(pnr: str, new_status: str = "PAID") -> Optional[
         cursor.execute("UPDATE hotel_bookings SET payment_status = ? WHERE pnr = ? OR id = ?", (new_status, pnr_clean, pnr_clean))
         conn.commit()
     return get_hotel_booking_by_pnr(pnr_clean)
+
+
+def get_user_hotel_bookings(user_id: str = "usr_guest") -> List[Dict[str, Any]]:
+    """Gets all hotel room reservations for a user."""
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM hotel_bookings WHERE user_id = ? ORDER BY created_at DESC", (user_id,))
+        rows = cursor.fetchall()
+        return [dict(r) for r in rows]
+

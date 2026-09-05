@@ -392,15 +392,53 @@ def retrieve_node(state: State) -> dict:
     return {"memories": memories, "executed_tools": state.get("executed_tools") or []}
 
 
+def extract_user_display_name(user_id: Optional[str], default: str = "User") -> str:
+    """Fetch real full name of logged-in user from DB if available."""
+    if not user_id or user_id == "usr_guest" or "guest" in str(user_id).lower():
+        return default
+    try:
+        import storage
+        u = storage.get_user_by_id(user_id)
+        if u and u.get("full_name"):
+            return u["full_name"]
+    except Exception:
+        pass
+    return default
+
+
+def parse_dynamic_date(text: str) -> str:
+    """Convert relative date expressions like 'tomorrow', 'today', '2026-08-15' into YYYY-MM-DD."""
+    import re
+    from datetime import datetime, timedelta
+    iso_match = re.search(r"\b202\d-\d{2}-\d{2}\b", text)
+    if iso_match:
+        return iso_match.group(0)
+    text_lower = text.lower()
+    now = datetime.now()
+    if "today" in text_lower:
+        return now.strftime("%Y-%m-%d")
+    elif "tomorrow" in text_lower:
+        return (now + timedelta(days=1)).strftime("%Y-%m-%d")
+    elif "next week" in text_lower:
+        return (now + timedelta(days=7)).strftime("%Y-%m-%d")
+    else:
+        return (now + timedelta(days=3)).strftime("%Y-%m-%d")
+
+
 def chat_node(state: State) -> dict:
     """Agent Reasoning Node: Evaluates prompt, decides if tools or calculations are needed."""
     user_msg = last_of(state["messages"], HumanMessage).strip()
     executed_tools = list(state.get("executed_tools") or [])
+    user_id = state.get("user_id") or "usr_guest"
+    user_full_name = extract_user_display_name(user_id, default="Priyanshu")
 
     # Check triggers
     math_triggers = ["calculate", "math", "sqrt", "compound interest", "python", "code", "factorial", "evaluate"]
     web_triggers = ["weather", "today", "news", "current price", "who is current", "latest documentation"]
-    flight_triggers = ["flight", "book flight", "ticket", "book ticket", "delhi to", "mumbai to", "pnr-", "pay pnr", "pay flight"]
+    # NOTE: bare "ticket" was removed — it's a substring of "tickets" and was
+    # matching movie-ticket requests too (e.g. "book 2 tickets for Pushpa"),
+    # causing a spurious phantom flight booking alongside the intended movie one.
+    flight_triggers = ["flight", "book flight", "book ticket", "delhi to", "mumbai to", "pnr-bob", "pay pnr", "pay flight"]
 
     tool_outputs = []
 
@@ -408,7 +446,6 @@ def chat_node(state: State) -> dict:
     if any(trig in user_msg.lower() for trig in flight_triggers):
         try:
             if hasattr(tools, "book_flight_tool") and tools.book_flight_tool:
-                user_id = state.get("user_id") or "usr_guest"
                 msg_lower = user_msg.lower()
                 
                 # Payment flow
@@ -434,17 +471,24 @@ def chat_node(state: State) -> dict:
                 # Book flight flow
                 elif "book" in msg_lower or "reserve" in msg_lower:
                     import re
-                    # Parse origin and destination if possible
                     cities = ["delhi", "mumbai", "bengaluru", "bangalore", "goa", "hyderabad", "kolkata", "chennai", "pune", "jaipur", "ahmedabad"]
                     found_cities = [c.capitalize() for c in cities if c in msg_lower]
                     orig = found_cities[0] if len(found_cities) > 0 else "Delhi"
-                    dest = found_cities[1] if len(found_cities) > 1 else "Mumbai"
+                    dest = found_cities[1] if len(found_cities) > 1 else ("Goa" if orig == "Delhi" else "Mumbai")
+                    
+                    # Extract custom passenger name if specified (e.g. 'for Rahul').
+                    # Guard against matching "for Mumbai"/"for Goa" (a destination city,
+                    # not a passenger) since "for <City>" fits the same pattern.
+                    name_match = re.search(r"(?:for|passenger|name)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)", user_msg)
+                    matched_name = name_match.group(1) if name_match else None
+                    passenger = matched_name if matched_name and matched_name not in found_cities else user_full_name
+                    travel_date = parse_dynamic_date(user_msg)
                     
                     booking_res = tools.book_flight_tool.invoke({
                         "origin": orig,
                         "destination": dest,
-                        "travel_date": "2026-07-26",
-                        "passenger_name": "Priyanshu",
+                        "travel_date": travel_date,
+                        "passenger_name": passenger,
                         "user_id": user_id
                     })
                     tool_outputs.append(f"Flight Reservation Result:\n{booking_res}")
@@ -452,7 +496,13 @@ def chat_node(state: State) -> dict:
 
                 # Search flight flow
                 elif "search" in msg_lower or "available" in msg_lower or "flights" in msg_lower:
-                    search_res = tools.search_flights_tool.invoke({"origin": "Delhi", "destination": "Mumbai", "travel_date": "2026-07-26"})
+                    cities = ["delhi", "mumbai", "bengaluru", "bangalore", "goa", "hyderabad", "kolkata", "chennai", "pune", "jaipur", "ahmedabad"]
+                    found_cities = [c.capitalize() for c in cities if c in msg_lower]
+                    orig = found_cities[0] if len(found_cities) > 0 else "Delhi"
+                    dest = found_cities[1] if len(found_cities) > 1 else ("Goa" if orig == "Delhi" else "Mumbai")
+                    travel_date = parse_dynamic_date(user_msg)
+                    
+                    search_res = tools.search_flights_tool.invoke({"origin": orig, "destination": dest, "travel_date": travel_date})
                     tool_outputs.append(f"Flight Search Results:\n{search_res}")
                     executed_tools.append({"tool": "search_flights", "query": user_msg, "result": str(search_res)[:200]})
         except Exception as f_err:
@@ -463,7 +513,6 @@ def chat_node(state: State) -> dict:
     if any(trig in user_msg.lower() for trig in hotel_triggers):
         try:
             if hasattr(tools, "book_hotel_tool") and tools.book_hotel_tool:
-                user_id = state.get("user_id") or "usr_guest"
                 msg_lower = user_msg.lower()
                 
                 # Payment flow
@@ -488,19 +537,32 @@ def chat_node(state: State) -> dict:
 
                 # Book room flow
                 elif any(k in msg_lower for k in ["book", "reserve", "confirm"]):
+                    import re
                     cities = ["goa", "mumbai", "delhi", "bengaluru", "jaipur", "udaipur", "manali", "shimla"]
                     found = [c for c in cities if c in msg_lower]
                     target_city = found[0].capitalize() if found else "Delhi"
                     
+                    # Guard against matching "for Goa"/"for Delhi" (the destination
+                    # city, not a guest name) since "for <City>" fits this pattern too.
+                    name_match = re.search(r"(?:for|guest|name)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)", user_msg)
+                    matched_name = name_match.group(1) if name_match else None
+                    found_cities_cap = [c.capitalize() for c in found]
+                    guest = matched_name if matched_name and matched_name not in found_cities_cap else user_full_name
+                    check_in_date = parse_dynamic_date(user_msg)
+
                     h_name = None
                     if "cheap" in msg_lower or "budget" in msg_lower:
                         h_name = "Ginger Hotel" if target_city == "Delhi" else "Bloomrooms"
+                    elif "taj" in msg_lower:
+                        h_name = "Taj Mahal Palace" if target_city == "Mumbai" else "Taj Fort Aguada Resort"
+                    elif "leela" in msg_lower:
+                        h_name = "The Leela Palace"
 
                     hotel_res = tools.book_hotel_tool.invoke({
                         "city": target_city,
-                        "guest_name": "Priyanshu",
+                        "guest_name": guest,
                         "hotel_name": h_name,
-                        "check_in": "Tomorrow",
+                        "check_in": check_in_date,
                         "user_id": user_id
                     })
                     tool_outputs.append(f"Hotel Reservation Result:\n{hotel_res}")
@@ -524,7 +586,6 @@ def chat_node(state: State) -> dict:
     if any(trig in user_msg.lower() for trig in movie_triggers):
         try:
             if hasattr(tools, "book_movie_tool") and tools.book_movie_tool:
-                user_id = state.get("user_id") or "usr_guest"
                 msg_lower = user_msg.lower()
                 
                 # Payment flow
@@ -549,16 +610,30 @@ def chat_node(state: State) -> dict:
 
                 # Book movie ticket flow
                 elif "book" in msg_lower or "reserve" in msg_lower or "ticket" in msg_lower:
+                    import re
                     m_title = "Avatar: Fire & Ash"
                     if "pushpa" in msg_lower: m_title = "Pushpa 2: The Rule"
                     elif "dune" in msg_lower: m_title = "Dune: Part Two"
                     elif "stree" in msg_lower: m_title = "Stree 2"
+
+                    cities = ["delhi", "mumbai", "bengaluru", "goa", "pune", "jaipur"]
+                    found_cities = [c.capitalize() for c in cities if c in msg_lower]
+                    target_city = found_cities[0] if found_cities else "Delhi"
+
+                    # Guard against matching "for Goa"/"for Delhi" (the city, not
+                    # the customer name) since "for <City>" fits this pattern too.
+                    name_match = re.search(r"(?:for|customer|name)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)", user_msg)
+                    matched_name = name_match.group(1) if name_match else None
+                    customer = matched_name if matched_name and matched_name not in found_cities else user_full_name
+
+                    ticket_match = re.search(r"(\d+)\s*(?:ticket|tickets|seat|seats)", msg_lower)
+                    t_count = int(ticket_match.group(1)) if ticket_match else 2
                     
                     movie_res = tools.book_movie_tool.invoke({
                         "movie_title": m_title,
-                        "customer_name": "Priyanshu",
-                        "city": "Delhi",
-                        "tickets_count": 2,
+                        "customer_name": customer,
+                        "city": target_city,
+                        "tickets_count": t_count,
                         "user_id": user_id
                     })
                     tool_outputs.append(f"Movie Ticket Reservation Result:\n{movie_res}")
@@ -566,13 +641,17 @@ def chat_node(state: State) -> dict:
 
                 # Search movie flow
                 elif "search" in msg_lower or "showing" in msg_lower or "movies" in msg_lower:
-                    search_res = tools.search_movies_tool.invoke({"city": "Delhi"})
+                    cities = ["delhi", "mumbai", "bengaluru", "goa", "pune", "jaipur"]
+                    found_cities = [c.capitalize() for c in cities if c in msg_lower]
+                    target_city = found_cities[0] if found_cities else "Delhi"
+                    
+                    search_res = tools.search_movies_tool.invoke({"city": target_city})
                     tool_outputs.append(f"Movie Search Results:\n{search_res}")
                     executed_tools.append({"tool": "search_movies", "query": user_msg, "result": str(search_res)[:200]})
         except Exception as m_err:
             print(f"[DEBUG] Movie tool trigger error: {m_err}")
 
-    # 2. Execute Python REPL if math/code is requested
+    # 4. Execute Python REPL if math/code is requested
     if any(trig in user_msg.lower() for trig in math_triggers):
         try:
             repl_result = tools.python_repl_tool.invoke(user_msg)

@@ -11,11 +11,15 @@ import sqlite3
 import uuid
 import random
 import hashlib
-from datetime import datetime, timezone
+import bcrypt
+from datetime import datetime, timezone, timedelta
+
+OTP_VALIDITY_MINUTES = 10
+OTP_MAX_ATTEMPTS = 5
 
 DB_DIR = os.path.join(os.path.dirname(__file__), "data")
 DB_PATH = os.path.join(DB_DIR, "chatbot_history.db")
-SALT = "bot_o_brain_secure_salt_2026"
+SALT = "bot_o_brain_secure_salt_2026"  # legacy-hash pepper, kept only to verify pre-bcrypt accounts
 
 def get_connection():
     os.makedirs(DB_DIR, exist_ok=True)
@@ -24,7 +28,21 @@ def get_connection():
     return conn
 
 def hash_password(password: str) -> str:
+    """bcrypt with a per-password random salt (replaces the old flat SHA-256 + static salt)."""
+    return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+
+def _legacy_hash_password(password: str) -> str:
     return hashlib.sha256(f"{password}{SALT}".encode('utf-8')).hexdigest()
+
+def verify_password(password: str, stored_hash: str) -> bool:
+    """Verifies against bcrypt hashes; falls back to the legacy SHA-256 scheme
+    for accounts created before the bcrypt migration."""
+    if stored_hash.startswith(("$2a$", "$2b$", "$2y$")):
+        try:
+            return bcrypt.checkpw(password.encode("utf-8"), stored_hash.encode("utf-8"))
+        except ValueError:
+            return False
+    return stored_hash == _legacy_hash_password(password)
 
 def generate_otp() -> str:
     return str(random.randint(100000, 999999))
@@ -103,7 +121,8 @@ def init_db():
             "ALTER TABLE users ADD COLUMN otp_expires_at TEXT",
             "ALTER TABLE sessions ADD COLUMN user_id TEXT DEFAULT 'usr_guest'",
             "ALTER TABLE messages ADD COLUMN user_id TEXT DEFAULT 'usr_guest'",
-            "ALTER TABLE sessions ADD COLUMN assistant_type TEXT DEFAULT 'general'"
+            "ALTER TABLE sessions ADD COLUMN assistant_type TEXT DEFAULT 'general'",
+            "ALTER TABLE users ADD COLUMN otp_attempts INTEGER DEFAULT 0",
         ]
         for m in migrations:
             try:
@@ -139,6 +158,7 @@ def register_user(full_name: str, email: str, username: str, password: str) -> d
     user_id = f"usr_{str(uuid.uuid4())[:8]}"
     otp_code = generate_otp()
     now = get_iso_now()
+    otp_expires_at = (datetime.now(timezone.utc) + timedelta(minutes=OTP_VALIDITY_MINUTES)).isoformat()
 
     with get_connection() as conn:
         cursor = conn.cursor()
@@ -151,10 +171,10 @@ def register_user(full_name: str, email: str, username: str, password: str) -> d
             raise ValueError("Email address is already registered. Please log in.")
 
         cursor.execute(
-            """INSERT INTO users 
-               (id, full_name, email, username, password_hash, is_verified, otp_code, created_at) 
-               VALUES (?, ?, ?, ?, ?, 0, ?, ?)""",
-            (user_id, full_name, email, username, pwd_hash, otp_code, now)
+            """INSERT INTO users
+               (id, full_name, email, username, password_hash, is_verified, otp_code, otp_expires_at, otp_attempts, created_at)
+               VALUES (?, ?, ?, ?, ?, 0, ?, ?, 0, ?)""",
+            (user_id, full_name, email, username, pwd_hash, otp_code, otp_expires_at, now)
         )
         conn.commit()
 
@@ -175,7 +195,7 @@ def verify_email_otp(email: str, otp_code: str) -> dict:
     with get_connection() as conn:
         cursor = conn.cursor()
         cursor.execute(
-            "SELECT id, full_name, email, username, is_verified, otp_code, created_at FROM users WHERE email = ?",
+            "SELECT id, full_name, email, username, is_verified, otp_code, otp_expires_at, otp_attempts, created_at FROM users WHERE email = ?",
             (email,)
         )
         user = cursor.fetchone()
@@ -185,11 +205,21 @@ def verify_email_otp(email: str, otp_code: str) -> dict:
         if user["is_verified"] == 1:
             return dict(user)
 
+        attempts = user["otp_attempts"] or 0
+        if attempts >= OTP_MAX_ATTEMPTS:
+            raise ValueError("Too many incorrect attempts. Please request a new OTP code.")
+
+        expires_at = user["otp_expires_at"]
+        if expires_at and datetime.fromisoformat(expires_at) < datetime.now(timezone.utc):
+            raise ValueError("This OTP code has expired. Please request a new one.")
+
         if user["otp_code"] != otp_code:
+            cursor.execute("UPDATE users SET otp_attempts = ? WHERE email = ?", (attempts + 1, email))
+            conn.commit()
             raise ValueError("Invalid 6-digit OTP code. Please check and try again.")
 
         cursor.execute(
-            "UPDATE users SET is_verified = 1, otp_code = NULL WHERE email = ?",
+            "UPDATE users SET is_verified = 1, otp_code = NULL, otp_attempts = 0 WHERE email = ?",
             (email,)
         )
         conn.commit()
@@ -203,6 +233,7 @@ def verify_email_otp(email: str, otp_code: str) -> dict:
 def resend_otp(email: str) -> str:
     email = email.strip().lower()
     new_otp = generate_otp()
+    new_expires_at = (datetime.now(timezone.utc) + timedelta(minutes=OTP_VALIDITY_MINUTES)).isoformat()
 
     with get_connection() as conn:
         cursor = conn.cursor()
@@ -213,31 +244,43 @@ def resend_otp(email: str) -> str:
         if user["is_verified"] == 1:
             raise ValueError("Account is already verified.")
 
-        cursor.execute("UPDATE users SET otp_code = ? WHERE email = ?", (new_otp, email))
+        cursor.execute(
+            "UPDATE users SET otp_code = ?, otp_expires_at = ?, otp_attempts = 0 WHERE email = ?",
+            (new_otp, new_expires_at, email)
+        )
         conn.commit()
 
     return new_otp
 
 def login_user(login_identifier: str, password: str) -> dict:
     identifier = login_identifier.strip().lower()
-    pwd_hash = hash_password(password)
 
     with get_connection() as conn:
         cursor = conn.cursor()
         cursor.execute(
-            """SELECT id, full_name, email, username, is_verified, created_at 
-               FROM users 
-               WHERE (email = ? OR username = ?) AND password_hash = ?""",
-            (identifier, identifier, pwd_hash)
+            """SELECT id, full_name, email, username, is_verified, created_at, password_hash
+               FROM users
+               WHERE (email = ? OR username = ?)""",
+            (identifier, identifier)
         )
         user = cursor.fetchone()
-        if not user:
+        if not user or not verify_password(password, user["password_hash"]):
             raise ValueError("Invalid email/username or password.")
 
         if user["is_verified"] == 0:
             raise ValueError("Email not verified yet! Please enter the 6-digit OTP code sent to your email.")
 
-        return dict(user)
+        # Transparently upgrade pre-bcrypt accounts on next successful login.
+        if not user["password_hash"].startswith(("$2a$", "$2b$", "$2y$")):
+            cursor.execute(
+                "UPDATE users SET password_hash = ? WHERE id = ?",
+                (hash_password(password), user["id"])
+            )
+            conn.commit()
+
+        result = dict(user)
+        result.pop("password_hash", None)
+        return result
 
 def get_user_by_id(user_id: str) -> dict:
     with get_connection() as conn:

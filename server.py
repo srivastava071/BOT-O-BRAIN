@@ -96,8 +96,16 @@ def get_current_user_id(request: Request) -> str:
         user = storage.get_user_by_id(user_id)
         if user:
             return user["id"]
-    
-    # Check/create default guest user
+        # Not a registered account. The frontend mints a per-browser
+        # "guest_<uuid>" id (see getGuestId() in app.js) so that every
+        # anonymous visitor gets an isolated chat/booking history instead
+        # of all of them colliding on one shared account. Trust it as-is —
+        # SQLite FK enforcement is off, so no row needs to exist for it.
+        if user_id.startswith("guest_"):
+            return user_id
+
+    # No header at all (e.g. a direct API call with no browser client).
+    # Fall back to the single legacy shared guest account.
     try:
         conn = storage.get_connection()
         cursor = conn.cursor()
@@ -115,7 +123,7 @@ def get_current_user_id(request: Request) -> str:
 
 def is_guest_user(user_id: str) -> bool:
     """Returns True if the given user_id corresponds to an unauthenticated guest."""
-    if not user_id or user_id == "usr_guest":
+    if not user_id or user_id == "usr_guest" or user_id.startswith("guest_"):
         return True
     try:
         user = storage.get_user_by_id(user_id)
@@ -165,10 +173,9 @@ async def signup(req: SignupRequest):
         email_sent = send_otp_email(req.email, otp_code, req.full_name)
         return {
             "status": "otp_sent",
-            "message": f"6-digit verification OTP code sent directly to {req.email}",
+            "message": f"A 6-digit verification OTP code has been sent directly to {req.email}",
             "email": req.email,
-            "email_sent": email_sent,
-            "otp_demo": otp_code
+            "email_sent": email_sent
         }
     except ValueError as err:
         raise HTTPException(status_code=400, detail=str(err))
@@ -190,9 +197,8 @@ async def resend_otp(req: ResendOtpRequest):
         email_sent = send_otp_email(req.email, new_otp)
         return {
             "status": "success",
-            "message": f"New OTP verification code sent directly to {req.email}",
-            "email_sent": email_sent,
-            "otp_demo": new_otp
+            "message": f"A new OTP verification code has been sent directly to {req.email}",
+            "email_sent": email_sent
         }
     except ValueError as err:
         raise HTTPException(status_code=400, detail=str(err))
@@ -507,10 +513,19 @@ async def add_memory(req: MemoryCreateRequest, request: Request):
 
 
 @app.delete("/api/memories/{memory_id}")
-async def delete_memory(memory_id: str):
+async def delete_memory(memory_id: str, request: Request):
+    user_id = get_current_user_id(request)
     try:
+        existing = vector_db._collection.get(ids=[memory_id])
+        owner_id = None
+        if existing and existing.get("metadatas"):
+            owner_id = (existing["metadatas"][0] or {}).get("user_id")
+        if owner_id is None or owner_id != user_id:
+            raise HTTPException(status_code=404, detail="Memory not found.")
         vector_db._collection.delete(ids=[memory_id])
         return {"status": "deleted", "id": memory_id}
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -552,9 +567,39 @@ async def serve_index():
         return FileResponse(index_path)
     return {"message": "Memory Chatbot API Running. Place index.html in static/ folder."}
 
+@app.get("/project")
+@app.get("/project.html")
+async def serve_project_docs():
+    project_path = os.path.join(static_dir, "project.html")
+    if os.path.exists(project_path):
+        return FileResponse(project_path)
+    return {"message": "Project documentation page not found."}
+
+
 from fastapi.responses import FileResponse, HTMLResponse
 import booking_system.booking_db as booking_db
 import booking_system.flight_service as flight_service
+import booking_system.hotel_service as hotel_service
+import booking_system.movie_service as movie_service
+
+@app.get("/api/user/bookings")
+async def get_user_bookings_api(request: Request):
+    user_id = get_current_user_id(request)
+    try:
+        flight_bookings = booking_db.get_user_bookings(user_id=user_id)
+        hotel_bookings = hotel_service.get_user_hotel_bookings(user_id=user_id)
+        movie_bookings = movie_service.get_user_movie_bookings(user_id=user_id)
+
+        total_count = len(flight_bookings) + len(hotel_bookings) + len(movie_bookings)
+        return {
+            "flights": flight_bookings,
+            "hotels": hotel_bookings,
+            "movies": movie_bookings,
+            "total_count": total_count
+        }
+    except Exception as err:
+        return {"flights": [], "hotels": [], "movies": [], "total_count": 0, "error": str(err)}
+
 
 @app.get("/pay/{pnr}", response_class=HTMLResponse)
 

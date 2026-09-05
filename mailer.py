@@ -21,6 +21,12 @@ def send_otp_email(recipient_email: str, otp_code: str, full_name: str = "User")
     """
     Sends a 6-digit OTP verification email directly to recipient_email via SMTP.
     """
+    load_dotenv(override=True)
+    smtp_server = os.getenv("SMTP_SERVER", "smtp.gmail.com")
+    smtp_port = int(os.getenv("SMTP_PORT", "587"))
+    smtp_email = os.getenv("SMTP_EMAIL", "").strip()
+    smtp_password = os.getenv("SMTP_PASSWORD", "").strip()
+
     subject = f"Your BOT-O-BRAIN Verification Code: {otp_code}"
     
     html_content = f"""
@@ -39,27 +45,26 @@ def send_otp_email(recipient_email: str, otp_code: str, full_name: str = "User")
     </html>
     """
 
-    if SMTP_EMAIL and SMTP_PASSWORD:
+    if smtp_email and smtp_password:
         try:
             msg = MIMEMultipart("alternative")
             msg["Subject"] = subject
-            msg["From"] = f"BOT-O-BRAIN <{SMTP_EMAIL}>"
+            msg["From"] = f"BOT-O-BRAIN <{smtp_email}>"
             msg["To"] = recipient_email
 
             part_html = MIMEText(html_content, "html")
             msg.attach(part_html)
 
-            with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+            with smtplib.SMTP(smtp_server, smtp_port) as server:
                 server.starttls()
-                server.login(SMTP_EMAIL, SMTP_PASSWORD)
-                server.sendmail(SMTP_EMAIL, recipient_email, msg.as_string())
+                server.login(smtp_email, smtp_password)
+                server.sendmail(smtp_email, recipient_email, msg.as_string())
             print(f"[SUCCESS] OTP Email sent via SMTP to {recipient_email}")
             return True
         except Exception as e:
             print(f"[ERROR] Failed to send email via SMTP to {recipient_email}: {e}")
-            print(f"[CONSOLE OTP CODE FOR {recipient_email}]: {otp_code}")
             return False
     else:
-        print(f"[INFO] SMTP credentials (SMTP_EMAIL & SMTP_PASSWORD) not configured in .env.")
-        print(f"[CONSOLE OTP DELIVERED TO {recipient_email}]: {otp_code}")
+        print(f"[ERROR] SMTP credentials (SMTP_EMAIL & SMTP_PASSWORD) not configured in .env.")
         return False
+

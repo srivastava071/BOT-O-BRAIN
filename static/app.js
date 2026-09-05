@@ -30,10 +30,10 @@ window.openServiceCategory = function(category) {
     subMenuBox.classList.remove("hidden");
 
     if (category === "bookings") {
-        subMenuTitle.innerHTML = "🎫 Bookings &amp; Reservations";
+        subMenuTitle.innerHTML = '<i class="fa-solid fa-ticket-simple"></i> Bookings &amp; Reservations';
         subMenuGrid.innerHTML = `
             <div class="service-card" onclick="selectService('flight')">
-                <div class="service-card-icon" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8;">
+                <div class="service-card-icon">
                     <i class="fa-solid fa-plane-departure"></i>
                 </div>
                 <div class="service-card-info">
@@ -43,7 +43,7 @@ window.openServiceCategory = function(category) {
                 <i class="fa-solid fa-chevron-right service-arrow"></i>
             </div>
             <div class="service-card" onclick="selectService('movie')">
-                <div class="service-card-icon" style="background: rgba(168, 85, 247, 0.15); color: #a855f7;">
+                <div class="service-card-icon">
                     <i class="fa-solid fa-film"></i>
                 </div>
                 <div class="service-card-info">
@@ -53,7 +53,7 @@ window.openServiceCategory = function(category) {
                 <i class="fa-solid fa-chevron-right service-arrow"></i>
             </div>
             <div class="service-card" onclick="selectService('hotel')">
-                <div class="service-card-icon" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8;">
+                <div class="service-card-icon">
                     <i class="fa-solid fa-hotel"></i>
                 </div>
                 <div class="service-card-info">
@@ -64,10 +64,10 @@ window.openServiceCategory = function(category) {
             </div>
         `;
     } else if (category === "messaging") {
-        subMenuTitle.innerHTML = "💬 Messaging &amp; Communications";
+        subMenuTitle.innerHTML = '<i class="fa-solid fa-comments"></i> Messaging &amp; Communications';
         subMenuGrid.innerHTML = `
             <div class="service-card" onclick="selectService('email')">
-                <div class="service-card-icon" style="background: rgba(239, 68, 68, 0.15); color: #ef4444;">
+                <div class="service-card-icon">
                     <i class="fa-solid fa-envelope"></i>
                 </div>
                 <div class="service-card-info">
@@ -77,7 +77,7 @@ window.openServiceCategory = function(category) {
                 <i class="fa-solid fa-chevron-right service-arrow"></i>
             </div>
             <div class="service-card" onclick="selectService('whatsapp')">
-                <div class="service-card-icon" style="background: rgba(34, 197, 94, 0.15); color: #22c55e;">
+                <div class="service-card-icon">
                     <i class="fa-brands fa-whatsapp"></i>
                 </div>
                 <div class="service-card-info">
@@ -87,7 +87,7 @@ window.openServiceCategory = function(category) {
                 <i class="fa-solid fa-chevron-right service-arrow"></i>
             </div>
             <div class="service-card" onclick="selectService('telegram')">
-                <div class="service-card-icon" style="background: rgba(59, 130, 246, 0.15); color: #3b82f6;">
+                <div class="service-card-icon">
                     <i class="fa-brands fa-telegram"></i>
                 </div>
                 <div class="service-card-info">
@@ -98,10 +98,10 @@ window.openServiceCategory = function(category) {
             </div>
         `;
     } else if (category === "utilities") {
-        subMenuTitle.innerHTML = "🛠️ Other AI Services &amp; Vault";
+        subMenuTitle.innerHTML = '<i class="fa-solid fa-brain"></i> Other AI Services &amp; Vault';
         subMenuGrid.innerHTML = `
             <div class="service-card" onclick="selectService('vault')">
-                <div class="service-card-icon" style="background: rgba(16, 185, 129, 0.15); color: #10b981;">
+                <div class="service-card-icon">
                     <i class="fa-solid fa-database"></i>
                 </div>
                 <div class="service-card-info">
@@ -111,7 +111,7 @@ window.openServiceCategory = function(category) {
                 <i class="fa-solid fa-chevron-right service-arrow"></i>
             </div>
             <div class="service-card" onclick="selectService('rag')">
-                <div class="service-card-icon" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b;">
+                <div class="service-card-icon">
                     <i class="fa-solid fa-book-bookmark"></i>
                 </div>
                 <div class="service-card-info">
@@ -168,19 +168,19 @@ window.selectService = function(type) {
     document.querySelectorAll(".service-form").forEach(f => f.classList.add("hidden"));
 
     if (type === "email") {
-        actionTitle.innerHTML = "📧 Send Email / Gmail";
+        actionTitle.innerHTML = '<i class="fa-solid fa-envelope"></i> Send Email / Gmail';
         document.getElementById("formEmail")?.classList.remove("hidden");
     } else if (type === "whatsapp") {
-        actionTitle.innerHTML = "💬 Send WhatsApp Message";
+        actionTitle.innerHTML = '<i class="fa-brands fa-whatsapp"></i> Send WhatsApp Message';
         document.getElementById("formWhatsApp")?.classList.remove("hidden");
     } else if (type === "telegram") {
-        actionTitle.innerHTML = "✈️ Send Telegram Message";
+        actionTitle.innerHTML = '<i class="fa-brands fa-telegram"></i> Send Telegram Message';
         document.getElementById("formTelegram")?.classList.remove("hidden");
     } else if (type === "movie") {
-        actionTitle.innerHTML = "🎬 Movie Ticket Booking";
+        actionTitle.innerHTML = '<i class="fa-solid fa-film"></i> Movie Ticket Booking';
         document.getElementById("formMovie")?.classList.remove("hidden");
     } else if (type === "hotel") {
-        actionTitle.innerHTML = "🏨 Hotel Room Booking";
+        actionTitle.innerHTML = '<i class="fa-solid fa-hotel"></i> Hotel Room Booking';
         document.getElementById("formHotel")?.classList.remove("hidden");
     }
 };
@@ -294,8 +294,8 @@ function renderSkyRecentSearches() {
     }
     container.innerHTML = list.map(r => `
         <div class="sky-recent-item" data-orig="${r.orig}" data-dest="${r.dest}">
-            <span><i class="fa-solid fa-plane" style="color:#58E1FF;margin-right:6px;"></i>${r.orig} → ${r.dest}</span>
-            <i class="fa-solid fa-chevron-right" style="font-size:0.65rem;color:#64748b;"></i>
+            <span><i class="fa-solid fa-plane" style="margin-right:6px;"></i>${r.orig} → ${r.dest}</span>
+            <i class="fa-solid fa-chevron-right" style="font-size:0.65rem;color:var(--text-tertiary);"></i>
         </div>
     `).join("");
 }
@@ -334,8 +334,8 @@ function renderSkyPinnedFlights() {
     }
     container.innerHTML = list.map(f => `
         <div class="sky-pinned-item">
-            <span><i class="fa-solid fa-thumbtack" style="color:#FFD54F;margin-right:6px;"></i>${f.airline} · ${f.flight_number}</span>
-            <span style="color:#FFD54F;font-weight:700;">₹${f.price_inr.toLocaleString()}</span>
+            <span><i class="fa-solid fa-thumbtack" style="margin-right:6px;"></i>${f.airline} · ${f.flight_number}</span>
+            <span style="font-weight:700;">₹${f.price_inr.toLocaleString()}</span>
         </div>
     `).join("");
 }
@@ -380,10 +380,10 @@ window.openHotelBot = function() {
     if (hotelMessagesInnerEl && hotelMessagesInnerEl.children.length === 0) {
         hotelMessagesInnerEl.innerHTML = `
             <div class="msg bot-msg animate-in">
-                <div class="msg-avatar"><i class="fa-solid fa-bell-concierge" style="color: #f59e0b;"></i></div>
+                <div class="msg-avatar"><i class="fa-solid fa-bell-concierge"></i></div>
                 <div class="msg-bubble">
                     <span class="speaker-name">GrandStay — Luxury Hotel AI Concierge</span>
-                    <p>Welcome to <strong>GrandStay Hotel Concierge</strong>! 🏨<br>I can search live hotel availability across any destination, find the cheapest budget stays, recommend luxury 5-star resorts, generate PNR room reservations, and confirm payments via UPI.</p>
+                    <p>Welcome to <strong>GrandStay Hotel Concierge</strong>.<br>I can search live hotel availability across any destination, find the cheapest budget stays, recommend luxury 5-star resorts, generate PNR room reservations, and confirm payments via UPI.</p>
                     <small class="hint-text">Try asking: <em>"Find cheapest hotels in Delhi"</em> or <em>"Book a room in Goa"</em></small>
                 </div>
             </div>
@@ -431,6 +431,9 @@ window.runHotelSearchWidget = function() {
 window.sendHotelPrompt = function(promptText) {
     if (!promptText) return;
     window.openHotelBot();
+    if (typeof window.collapseHotelCockpit === "function") {
+        window.collapseHotelCockpit();
+    }
     hotelSendMessage(promptText);
 };
 
@@ -648,6 +651,22 @@ document.addEventListener("DOMContentLoaded", () => {
     // State
     let currentUser = null;
     let currentSessionId = null;
+
+    // Every unauthenticated visitor needs a stable ID so guest chats/bookings
+    // don't collide with every other anonymous visitor on a shared "usr_guest"
+    // account. Persist one per browser instead.
+    function getGuestId() {
+        let guestId = localStorage.getItem("bot_o_brain_guest_id");
+        if (!guestId) {
+            guestId = "guest_" + (crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`);
+            localStorage.setItem("bot_o_brain_guest_id", guestId);
+        }
+        return guestId;
+    }
+
+    function getUserId() {
+        return currentUser && currentUser.id ? currentUser.id : getGuestId();
+    }
     let authMode = "login";
     let pendingVerificationEmail = "";
     let currentAttachment = null;
@@ -681,11 +700,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function getAuthHeaders() {
-        const headers = { "Content-Type": "application/json" };
-        if (currentUser && currentUser.id) {
-            headers["X-User-Id"] = currentUser.id;
-        }
-        return headers;
+        return { "Content-Type": "application/json", "X-User-Id": getUserId() };
     }
 
     function updateAuthUI() {
@@ -792,7 +807,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function showAuthNotice(msg) {
         if (authModalSubtitle) {
-            authModalSubtitle.innerHTML = `<span style="color: #ef4444; font-weight: 600;">🔒 ${escapeHtml(msg)}</span>`;
+            authModalSubtitle.innerHTML = `<span style="color: var(--danger); font-weight: 600;">${escapeHtml(msg)}</span>`;
         }
     }
 
@@ -846,18 +861,16 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (!res.ok) throw new Error(data.detail || "Signup failed.");
 
                 pendingVerificationEmail = email;
-                if (data.otp_demo) {
-                    authOtpCode.value = data.otp_demo;
-                    otpNoticeText.innerHTML = `
-                        Verification code sent to <strong>${escapeHtml(email)}</strong>
-                        <div style="margin-top: 12px; padding: 12px; background: rgba(245, 158, 11, 0.12); border: 1px dashed #f59e0b; border-radius: 10px; text-align: center;">
-                            <div style="font-size: 0.75rem; color: #d97706; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">🧪 Testing Demo OTP Code</div>
-                            <div style="font-size: 1.8rem; font-weight: 800; color: #1e293b; letter-spacing: 8px; font-family: monospace; margin-top: 4px;">${data.otp_demo}</div>
-                        </div>
+                authOtpCode.value = "";
+                otpNoticeText.innerHTML = data.email_sent
+                    ? `
+                    Verification code sent directly to <strong>${escapeHtml(email)}</strong>.<br>
+                    <small style="color: var(--text-secondary); display: block; margin-top: 6px;">Please check your Inbox (and Spam folder) for your 6-digit OTP code.</small>
+                    `
+                    : `
+                    <span style="color: var(--danger);">We couldn't deliver the code to <strong>${escapeHtml(email)}</strong> right now.</span><br>
+                    <small style="color: var(--text-secondary); display: block; margin-top: 6px;">Email delivery is temporarily unavailable. Please try "Resend Code" in a moment, or contact support if this continues.</small>
                     `;
-                } else {
-                    otpNoticeText.innerText = `A 6-digit verification code has been sent to ${email}`;
-                }
                 setAuthMode("otp");
 
             } catch (err) {
@@ -984,16 +997,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 const data = await res.json();
                 if (!res.ok) throw new Error(data.detail || "Resend failed.");
 
-                if (data.otp_demo) {
-                    authOtpCode.value = data.otp_demo;
-                    otpNoticeText.innerHTML = `
-                        New verification code sent to <strong>${escapeHtml(pendingVerificationEmail)}</strong>
-                        <div style="margin-top: 12px; padding: 12px; background: rgba(245, 158, 11, 0.12); border: 1px dashed #f59e0b; border-radius: 10px; text-align: center;">
-                            <div style="font-size: 0.75rem; color: #d97706; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">🧪 Testing Demo OTP Code</div>
-                            <div style="font-size: 1.8rem; font-weight: 800; color: #1e293b; letter-spacing: 8px; font-family: monospace; margin-top: 4px;">${data.otp_demo}</div>
-                        </div>
-                    `;
-                }
+                otpNoticeText.innerHTML = data.email_sent
+                    ? `New verification code sent to <strong>${escapeHtml(pendingVerificationEmail)}</strong>.`
+                    : `<span style="color: var(--danger);">Still couldn't deliver the code to <strong>${escapeHtml(pendingVerificationEmail)}</strong>.</span> <small style="color: var(--text-secondary); display: block; margin-top: 6px;">Please try again shortly.</small>`;
             } catch (err) {
                 showOtpError(err.message);
             } finally {
@@ -1018,6 +1024,17 @@ document.addEventListener("DOMContentLoaded", () => {
             chatSidebar.classList.toggle("collapsed");
         });
     }
+
+    // On phones the sidebar is `position: fixed` and covers the whole chat
+    // view, so it must start collapsed there instead of defaulting open
+    // (which is the correct default on desktop, where it sits inline).
+    (function collapseSidebarsOnMobile() {
+        if (window.innerWidth > 768) return;
+        ["chatSidebar", "skySidebar", "hotelSidebar"].forEach((id) => {
+            const el = document.getElementById(id);
+            if (el) el.classList.add("collapsed");
+        });
+    })();
 
     // New Chat
     if (newChatSidebarBtn) newChatSidebarBtn.addEventListener("click", () => startNewChatSession());
@@ -1141,7 +1158,7 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             const res = await fetch("/api/rag/upload", {
                 method: "POST",
-                headers: { "X-User-Id": currentUser ? currentUser.id : "usr_guest" },
+                headers: { "X-User-Id": getUserId() },
                 body: formData
             });
             const data = await res.json();
@@ -1232,7 +1249,7 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             const res = await fetch("/api/upload-file", {
                 method: "POST",
-                headers: { "X-User-Id": currentUser ? currentUser.id : "usr_guest" },
+                headers: { "X-User-Id": getUserId() },
                 body: formData
             });
             const data = await res.json();
@@ -1568,7 +1585,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 } else {
                     deleteBtn.classList.add("confirm-delete");
                     deleteBtn.innerHTML = '<i class="fa-solid fa-check"></i>';
-                    deleteBtn.style.color = 'var(--accent-red)';
+                    deleteBtn.style.color = 'var(--danger)';
 
                     setTimeout(() => {
                         if (deleteBtn && deleteBtn.classList.contains("confirm-delete")) {
@@ -1648,16 +1665,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 // Check explicit executed_tools or infer from content & context
                 if (toolsList.some(t => t.tool === "web_search") || contentText.includes("http") || contentText.includes("Search")) {
-                    badges.push(`<span class="tool-trace-badge tool-badge-web"><i class="fa-solid fa-magnifying-glass"></i> 🔍 Web Search Executed</span>`);
+                    badges.push(`<span class="tool-trace-badge tool-badge-web"><i class="fa-solid fa-magnifying-glass"></i> Web Search Executed</span>`);
                 }
                 if (toolsList.some(t => t.tool === "python_repl") || contentText.includes("```python") || contentText.includes("Calculated") || contentText.includes("def ")) {
-                    badges.push(`<span class="tool-trace-badge tool-badge-python"><i class="fa-solid fa-code"></i> 🐍 Python REPL Executed</span>`);
+                    badges.push(`<span class="tool-trace-badge tool-badge-python"><i class="fa-solid fa-code"></i> Python REPL Executed</span>`);
                 }
                 if (toolsList.some(t => t.tool === "rag_search") || memoriesList.some(mem => typeof mem === "string" && mem.includes("Document"))) {
-                    badges.push(`<span class="tool-trace-badge tool-badge-rag"><i class="fa-solid fa-book-bookmark"></i> 📚 Document RAG Search</span>`);
+                    badges.push(`<span class="tool-trace-badge tool-badge-rag"><i class="fa-solid fa-book-bookmark"></i> Document RAG Search</span>`);
                 }
                 if (memoriesList.length > 0 && !badges.some(b => b.includes("RAG"))) {
-                    badges.push(`<span class="tool-trace-badge tool-badge-web" style="background: rgba(99, 102, 241, 0.12); color: #6366f1; border-color: rgba(99, 102, 241, 0.3);"><i class="fa-solid fa-brain"></i> 🧠 Vector Memory Active</span>`);
+                    badges.push(`<span class="tool-trace-badge tool-badge-web"><i class="fa-solid fa-brain"></i> Vector Memory Active</span>`);
                 }
 
                 if (badges.length > 0) {
@@ -1668,7 +1685,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     const cleanList = memoriesList.map(mem => {
                         if (typeof mem === "string" && mem.startsWith("[Document Knowledge '")) {
                             const parts = mem.split("'");
-                            return `📄 ${parts[1] || 'Document'}`;
+                            return `Document: ${parts[1] || 'Document'}`;
                         }
                         return mem;
                     });
@@ -1871,7 +1888,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     <div style="display:flex;align-items:center;gap:8px;">
                         <div class="sky-price">₹${Number(f.price_inr).toLocaleString()} <small>/person</small></div>
                         <button type="button" class="btn-pin-ticket" onclick='window.togglePinFlight(${flightAttr}, this)' title="Pin flight"><i class="fa-solid fa-thumbtack"></i></button>
-                        <button type="button" class="btn-book-ticket" onclick="window.sendMessage('Book flight ${f.flight_number.replace(/'/g, "")} (${f.airline.replace(/'/g, "")}) from ${(origin || "").replace(/'/g, "")} to ${(destination || "").replace(/'/g, "")} for Priyanshu')">Book</button>
+                        <button type="button" class="btn-book-ticket" onclick="window.skySendMessage('Book flight ${f.flight_number.replace(/'/g, "")} (${f.airline.replace(/'/g, "")}) from ${(origin || "").replace(/'/g, "")} to ${(destination || "").replace(/'/g, "")} for Priyanshu')">Book</button>
                     </div>
                 </div>
             </div>
@@ -2051,7 +2068,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 badges.push(`<span class="tool-trace-badge tool-badge-rag"><i class="fa-solid fa-book-bookmark"></i> 📚 Document RAG Search</span>`);
             }
             if (memories && memories.length > 0 && !badges.some(b => b.includes("RAG"))) {
-                badges.push(`<span class="tool-trace-badge tool-badge-web" style="background: rgba(99, 102, 241, 0.12); color: #6366f1; border-color: rgba(99, 102, 241, 0.3);"><i class="fa-solid fa-brain"></i> 🧠 Vector Memory Active</span>`);
+                badges.push(`<span class="tool-trace-badge tool-badge-web"><i class="fa-solid fa-brain"></i> Vector Memory Active</span>`);
             }
 
             if (badges.length > 0) {
@@ -2061,9 +2078,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (memories && memories.length > 0) {
                 pillsHtml += `<small class="hint-text"><i class="fa-solid fa-brain"></i> Context: ${memories.join("; ")}</small>`;
             }
-            if (newFacts && newFacts.length > 0) {
-                pillsHtml += `<small class="hint-text" style="color: var(--color-emerald);"><i class="fa-solid fa-floppy-disk"></i> Saved: ${newFacts.join("; ")}</small>`;
-            }
+            // Facts extracted in background silently — accessible via My Search in sidebar
         }
 
         msgEl.innerHTML = `
@@ -2099,9 +2114,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const bodyHtml = skyCardHtml ? skyCardHtml : `<p>${formatMessageContent(text)}</p>`;
 
         let pillsHtml = "";
-        if (role === "bot" && newFacts && newFacts.length > 0) {
-            pillsHtml += `<small class="hint-text" style="color: var(--color-emerald);"><i class="fa-solid fa-floppy-disk"></i> Saved: ${newFacts.map(escapeHtml).join("; ")}</small>`;
-        }
+        // Fact extraction saved in background silently — accessible via My Search in sidebar
 
         msgEl.innerHTML = `
             <div class="msg-avatar">${avatarHtml}</div>
@@ -2216,7 +2229,7 @@ document.addEventListener("DOMContentLoaded", () => {
             return `
                 <div class="hotel-voucher-card animate-in">
                     <div class="hotel-voucher-header">
-                        <div class="hotel-brand"><i class="fa-solid fa-hotel" style="color: #f59e0b;"></i> <span>GrandStay Luxury Reservation</span></div>
+                        <div class="hotel-brand"><i class="fa-solid fa-hotel"></i> <span>GrandStay Luxury Reservation</span></div>
                         <span class="hotel-pnr-badge">${pnr}</span>
                     </div>
                     <div class="hotel-voucher-body">
@@ -2239,10 +2252,10 @@ document.addEventListener("DOMContentLoaded", () => {
         if (text.includes("Hotel Recommendations") || text.includes("Cheapest & Best Value Hotels")) {
             return `
                 <div class="hotel-results-wrapper animate-in">
-                    <div class="hotel-results-header"><i class="fa-solid fa-bell-concierge" style="color: #f59e0b;"></i> Live Hotel Search Results</div>
+                    <div class="hotel-results-header"><i class="fa-solid fa-bell-concierge"></i> Live Hotel Search Results</div>
                     <div class="hotel-results-body">${formatMessageContent(text)}</div>
-                    <div class="hotel-results-footer" style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed rgba(245, 158, 11, 0.2);">
-                        <small style="color: #94a3b8;"><i class="fa-solid fa-shield-halved"></i> Reply <em>"Book the cheapest hotel"</em> or <em>"Book room in Delhi"</em> to reserve instantly!</small>
+                    <div class="hotel-results-footer" style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--border);">
+                        <small style="color: var(--text-secondary);"><i class="fa-solid fa-shield-halved"></i> Reply <em>"Book the cheapest hotel"</em> or <em>"Book room in Delhi"</em> to reserve instantly!</small>
                     </div>
                 </div>
             `;
@@ -2258,7 +2271,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const msgEl = document.createElement("div");
         msgEl.className = `msg ${role === "user" ? "user-msg" : "bot-msg"} animate-in`;
 
-        const avatarHtml = role === "user" ? '<i class="fa-solid fa-user"></i>' : '<i class="fa-solid fa-bell-concierge" style="color: #f59e0b;"></i>';
+        const avatarHtml = role === "user" ? '<i class="fa-solid fa-user"></i>' : '<i class="fa-solid fa-bell-concierge"></i>';
         const nameHtml = role === "user"
             ? (currentUser ? currentUser.full_name || currentUser.username : "You")
             : "GrandStay — Luxury Hotel AI Concierge";
@@ -2282,6 +2295,10 @@ document.addEventListener("DOMContentLoaded", () => {
         const hotelMessagesInnerEl = document.getElementById("hotelMessagesInner");
         if (!userText || !userText.trim()) return;
 
+        if (typeof window.collapseHotelCockpit === "function") {
+            window.collapseHotelCockpit();
+        }
+
         appendHotelMessage("user", userText);
 
         try {
@@ -2300,7 +2317,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const data = await res.json();
             appendHotelMessage("bot", data.reply);
         } catch (err) {
-            appendHotelMessage("bot", "⚠️ GrandStay Error: Unable to communicate with hotel booking engine.");
+            appendHotelMessage("bot", "GrandStay Error: Unable to communicate with hotel booking engine.");
         }
     }
     window.hotelSendMessage = hotelSendMessage;
@@ -2474,7 +2491,6 @@ document.addEventListener("DOMContentLoaded", () => {
             if (modeLabel) modeLabel.innerText = "Mode: Pure Memory";
             if (modeIcon) {
                 modeIcon.className = "fa-solid fa-brain";
-                modeIcon.style.color = "#3b82f6";
             }
             if (modeToggleChip) {
                 modeToggleChip.className = "mode-toggle-chip mode-pure-memory";
@@ -2485,7 +2501,6 @@ document.addEventListener("DOMContentLoaded", () => {
             if (modeLabel) modeLabel.innerText = "Mode: RAG Knowledge";
             if (modeIcon) {
                 modeIcon.className = "fa-solid fa-file-contract";
-                modeIcon.style.color = "#10b981";
             }
             if (modeToggleChip) {
                 modeToggleChip.className = "mode-toggle-chip mode-rag-only";
@@ -2496,7 +2511,6 @@ document.addEventListener("DOMContentLoaded", () => {
             if (modeLabel) modeLabel.innerText = "Mode: Full Hybrid";
             if (modeIcon) {
                 modeIcon.className = "fa-solid fa-brain";
-                modeIcon.style.color = "#a855f7";
             }
             if (modeToggleChip) {
                 modeToggleChip.className = "mode-toggle-chip";
@@ -2571,10 +2585,28 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
+    // Global wheel & keyboard scroll handler for welcome hero dashboard
+    window.addEventListener("wheel", (e) => {
+        const hero = document.getElementById("welcomeHero");
+        if (hero && !hero.classList.contains("hidden")) {
+            hero.scrollTop += e.deltaY;
+        }
+    }, { passive: true });
+
     document.addEventListener("keydown", (e) => {
+        const hero = document.getElementById("welcomeHero");
+        if (hero && !hero.classList.contains("hidden")) {
+            if (e.key === "PageDown" || e.key === "ArrowDown") {
+                hero.scrollTop += 150;
+            } else if (e.key === "PageUp" || e.key === "ArrowUp") {
+                hero.scrollTop -= 150;
+            }
+        }
         if (e.key === "Escape") {
             const servicesModal = document.getElementById("servicesModal");
             const authModal = document.getElementById("authModal");
+            const myBookingsModal = document.getElementById("myBookingsModal");
+            const mySearchModal = document.getElementById("mySearchModal");
             if (servicesModal && !servicesModal.classList.contains("hidden")) {
                 window.closeServicesModal();
             }
@@ -2582,8 +2614,271 @@ document.addEventListener("DOMContentLoaded", () => {
                 const closeAuthBtn = document.getElementById("closeAuthModal");
                 if (closeAuthBtn) closeAuthBtn.click();
             }
+            if (myBookingsModal && !myBookingsModal.classList.contains("hidden")) {
+                window.closeMyBookingsModal();
+            }
+            if (mySearchModal && !mySearchModal.classList.contains("hidden")) {
+                window.closeMySearchModal();
+            }
         }
     });
 
 });
+
+// =========================================================================
+// MY BOOKINGS & MY SEARCH MODAL ENGINE
+// =========================================================================
+
+let cachedBookings = { flights: [], hotels: [], movies: [] };
+
+async function openMyBookingsModal() {
+    const modal = document.getElementById("myBookingsModal");
+    if (!modal) return;
+    modal.classList.remove("hidden");
+    filterBookingsTab('all');
+    await loadUserBookings();
+}
+window.openMyBookingsModal = openMyBookingsModal;
+
+function closeMyBookingsModal() {
+    const modal = document.getElementById("myBookingsModal");
+    if (modal) modal.classList.add("hidden");
+}
+window.closeMyBookingsModal = closeMyBookingsModal;
+
+async function loadUserBookings() {
+    const container = document.getElementById("myBookingsList");
+    if (!container) return;
+
+    try {
+        const res = await fetch("/api/user/bookings", {
+            headers: typeof getAuthHeaders === "function" ? getAuthHeaders() : {}
+        });
+        if (!res.ok) throw new Error("Failed to load bookings");
+        const data = await res.json();
+        cachedBookings = {
+            flights: data.flights || [],
+            hotels: data.hotels || [],
+            movies: data.movies || []
+        };
+        renderBookingsList();
+    } catch (err) {
+        console.error("Bookings fetch error:", err);
+        container.innerHTML = `
+            <div class="sky-empty-mini" style="padding: 30px; text-align: center; color: var(--danger);">
+                <i class="fa-solid fa-triangle-exclamation" style="font-size: 24px;"></i>
+                <p style="margin-top: 8px;">Unable to fetch bookings right now.</p>
+            </div>
+        `;
+    }
+}
+
+let activeBookingTab = 'all';
+function filterBookingsTab(tabName) {
+    activeBookingTab = tabName;
+    document.querySelectorAll('.booking-tab').forEach(tab => {
+        if (tab.dataset.tab === tabName) {
+            tab.classList.add('active');
+        } else {
+            tab.classList.remove('active');
+        }
+    });
+    renderBookingsList();
+}
+window.filterBookingsTab = filterBookingsTab;
+
+function renderBookingsList() {
+    const container = document.getElementById("myBookingsList");
+    if (!container) return;
+
+    let items = [];
+    if (activeBookingTab === 'all' || activeBookingTab === 'flights') {
+        cachedBookings.flights.forEach(b => items.push({ ...b, booking_type: 'flight' }));
+    }
+    if (activeBookingTab === 'all' || activeBookingTab === 'hotels') {
+        cachedBookings.hotels.forEach(b => items.push({ ...b, booking_type: 'hotel' }));
+    }
+    if (activeBookingTab === 'all' || activeBookingTab === 'movies') {
+        cachedBookings.movies.forEach(b => items.push({ ...b, booking_type: 'movie' }));
+    }
+
+    if (items.length === 0) {
+        container.innerHTML = `
+            <div class="sky-empty-mini" style="padding: 40px; text-align: center; color: var(--text-secondary);">
+                <i class="fa-solid fa-receipt" style="font-size: 32px; color: var(--text-tertiary);"></i>
+                <h4 style="margin: 12px 0 4px 0; color: var(--text);">No Bookings Found</h4>
+                <p style="margin: 0; font-size: 0.85rem;">You haven't made any ${activeBookingTab === 'all' ? '' : activeBookingTab} reservations yet. Use SkyBot or AI Services to book tickets!</p>
+            </div>
+        `;
+        return;
+    }
+
+    let html = "";
+    items.forEach(item => {
+        if (item.booking_type === 'flight') {
+            const isPaid = item.payment_status === 'PAID';
+            html += `
+                <div class="booking-card-item">
+                    <div class="booking-card-header">
+                        <span class="booking-type-badge badge-type-flight"><i class="fa-solid fa-plane-up"></i> Flight Reservation</span>
+                        <span class="booking-pnr-tag">PNR: ${item.pnr}</span>
+                    </div>
+                    <div class="booking-card-main">
+                        <div class="booking-title-info">
+                            <h4>${item.airline} <span style="font-weight: normal; color: var(--text-secondary);">(${item.flight_number})</span></h4>
+                            <p><i class="fa-solid fa-location-dot"></i> ${item.origin} ➔ ${item.destination}</p>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 1.1rem; font-weight: 800; color: var(--text);">₹${(item.price_inr || 0).toLocaleString()} INR</div>
+                            <span class="${isPaid ? 'booking-status-paid' : 'booking-status-pending'}">
+                                ${isPaid ? '<i class="fa-solid fa-circle-check"></i> CONFIRMED' : '<i class="fa-solid fa-clock"></i> PENDING PAYMENT'}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="booking-card-meta">
+                        <span><i class="fa-regular fa-calendar"></i> Date: ${item.travel_date || 'N/A'} @ ${item.departure_time || 'N/A'}</span>
+                        <span><i class="fa-solid fa-user"></i> Passenger: ${item.passenger_name || 'User'}</span>
+                        ${!isPaid ? `<a href="/pay/${item.pnr}" target="_blank" class="btn-pay-now"><i class="fa-solid fa-credit-card"></i> Pay Now</a>` : ''}
+                    </div>
+                </div>
+            `;
+        } else if (item.booking_type === 'hotel') {
+            const isPaid = item.payment_status === 'PAID';
+            html += `
+                <div class="booking-card-item">
+                    <div class="booking-card-header">
+                        <span class="booking-type-badge badge-type-hotel"><i class="fa-solid fa-hotel"></i> Hotel Room</span>
+                        <span class="booking-pnr-tag">PNR: ${item.pnr}</span>
+                    </div>
+                    <div class="booking-card-main">
+                        <div class="booking-title-info">
+                            <h4>${item.hotel_name}</h4>
+                            <p><i class="fa-solid fa-city"></i> ${item.city} • ${item.room_type}</p>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 1.1rem; font-weight: 800; color: var(--text);">₹${(item.total_price_inr || 0).toLocaleString()} INR</div>
+                            <span class="${isPaid ? 'booking-status-paid' : 'booking-status-pending'}">
+                                ${isPaid ? '<i class="fa-solid fa-circle-check"></i> CONFIRMED' : '<i class="fa-solid fa-clock"></i> PENDING PAYMENT'}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="booking-card-meta">
+                        <span><i class="fa-regular fa-calendar"></i> Check-In: ${item.check_in || 'N/A'} ➔ Check-Out: ${item.check_out || 'N/A'}</span>
+                        <span><i class="fa-solid fa-user-group"></i> Guests: ${item.guests_count || 1}</span>
+                    </div>
+                </div>
+            `;
+        } else if (item.booking_type === 'movie') {
+            const isPaid = item.payment_status === 'PAID';
+            html += `
+                <div class="booking-card-item">
+                    <div class="booking-card-header">
+                        <span class="booking-type-badge badge-type-movie"><i class="fa-solid fa-film"></i> Cinema Tickets</span>
+                        <span class="booking-pnr-tag">PNR: ${item.pnr}</span>
+                    </div>
+                    <div class="booking-card-main">
+                        <div class="booking-title-info">
+                            <h4>${item.movie_title}</h4>
+                            <p><i class="fa-solid fa-building"></i> ${item.cinema_hall} (${item.city})</p>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 1.1rem; font-weight: 800; color: var(--text);">₹${(item.total_price_inr || 0).toLocaleString()} INR</div>
+                            <span class="${isPaid ? 'booking-status-paid' : 'booking-status-pending'}">
+                                ${isPaid ? '<i class="fa-solid fa-circle-check"></i> CONFIRMED' : '<i class="fa-solid fa-clock"></i> RESERVED'}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="booking-card-meta">
+                        <span><i class="fa-regular fa-clock"></i> ${item.show_date || ''} @ ${item.show_time || ''}</span>
+                        <span><i class="fa-solid fa-couch"></i> Seats: ${item.seats || 'General'}</span>
+                    </div>
+                </div>
+            `;
+        }
+    });
+
+    container.innerHTML = html;
+}
+
+// MY SEARCH MODAL
+async function openMySearchModal() {
+    const modal = document.getElementById("mySearchModal");
+    if (!modal) return;
+    modal.classList.remove("hidden");
+    await loadUserSearchMemories();
+}
+window.openMySearchModal = openMySearchModal;
+
+function closeMySearchModal() {
+    const modal = document.getElementById("mySearchModal");
+    if (modal) modal.classList.add("hidden");
+}
+window.closeMySearchModal = closeMySearchModal;
+
+async function loadUserSearchMemories() {
+    const container = document.getElementById("mySearchList");
+    if (!container) return;
+
+    try {
+        const res = await fetch("/api/memories", {
+            headers: typeof getAuthHeaders === "function" ? getAuthHeaders() : {}
+        });
+        if (!res.ok) throw new Error("Failed to load search memories");
+        const data = await res.json();
+        const memories = data.memories || [];
+
+        if (memories.length === 0) {
+            container.innerHTML = `
+                <div class="sky-empty-mini" style="padding: 40px; text-align: center; color: var(--text-secondary);">
+                    <i class="fa-solid fa-magnifying-glass-location" style="font-size: 32px; color: var(--text-tertiary);"></i>
+                    <h4 style="margin: 12px 0 4px 0; color: var(--text);">No Saved Searches Yet</h4>
+                    <p style="margin: 0; font-size: 0.85rem;">As you talk to SkyBot or search for flights, your travel preferences and search details are saved automatically in the background and will appear here!</p>
+                </div>
+            `;
+            return;
+        }
+
+        let html = '<div style="display: flex; flex-direction: column; gap: 8px;">';
+        memories.forEach(m => {
+            html += `
+                <div class="search-fact-item" id="fact-${m.id}">
+                    <div class="search-fact-text">
+                        <i class="fa-solid fa-brain"></i>
+                        <span>${typeof escapeHtml === "function" ? escapeHtml(m.text) : m.text}</span>
+                    </div>
+                    <button class="btn-delete-fact" onclick="deleteSearchFact('${m.id}')" title="Delete preference">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+            `;
+        });
+        html += '</div>';
+        container.innerHTML = html;
+    } catch (err) {
+        console.error("Search memories error:", err);
+        container.innerHTML = `
+            <div class="sky-empty-mini" style="padding: 30px; text-align: center; color: var(--danger);">
+                <i class="fa-solid fa-triangle-exclamation" style="font-size: 24px;"></i>
+                <p style="margin-top: 8px;">Unable to fetch search preferences.</p>
+            </div>
+        `;
+    }
+}
+
+async function deleteSearchFact(factId) {
+    try {
+        const res = await fetch(`/api/memories/${factId}`, {
+            method: "DELETE",
+            headers: typeof getAuthHeaders === "function" ? getAuthHeaders() : {}
+        });
+        if (res.ok) {
+            const el = document.getElementById(`fact-${factId}`);
+            if (el) el.remove();
+        }
+    } catch (err) {
+        console.error("Delete fact error:", err);
+    }
+}
+window.deleteSearchFact = deleteSearchFact;
+
 

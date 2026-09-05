@@ -115,9 +115,9 @@ def check_hotel_booking_tool(pnr: str, user_id: str = "usr_guest") -> str:
     """
     try:
         booking = hotel_service.get_hotel_booking_by_pnr(pnr)
-        if not booking:
+        if not booking or booking.get("user_id") != user_id:
             return f"No hotel reservation found for PNR: '{pnr}'."
-        
+
         return (
             f"**HOTEL RESERVATION STATUS FOR `{booking['pnr']}`**:\n"
             f"• Guest: {booking['guest_name']} ({booking['guests_count']} Guests)\n"
@@ -142,9 +142,9 @@ def pay_hotel_booking_tool(pnr: str, payment_method: str = "UPI", user_id: str =
     """
     try:
         booking = hotel_service.get_hotel_booking_by_pnr(pnr)
-        if not booking:
+        if not booking or booking.get("user_id") != user_id:
             return f"Cannot process payment. No hotel reservation found for PNR: '{pnr}'."
-        
+
         updated = hotel_service.update_hotel_payment_status(pnr, new_status="PAID")
         
         return (
